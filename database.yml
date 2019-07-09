@@ -1,10 +1,5 @@
 development:
-  dialect: postgres
-  database: be_booking_sign_development
-  user: postgres
-  password: postgres
-  host: 127.0.0.1
-  pool: 5
+  url: {{envOr "DEVELOP_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/practice_test?sslmode=disable"}}
 
 test:
   url: {{envOr "TEST_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/be_booking_sign_test?sslmode=disable"}}

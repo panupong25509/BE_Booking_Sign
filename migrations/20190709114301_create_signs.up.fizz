@@ -1,0 +1,7 @@
+create_table("signs") {
+	t.Column("id", "integer", {primary: true})
+	t.Column("sign_name", "string", {})
+	t.Column("location", "string", {})
+	t.Index("sign_name", {"unique": true})
+	t.Timestamps()
+}

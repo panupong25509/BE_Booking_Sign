@@ -7,6 +7,7 @@ import (
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 	"github.com/unrolled/secure"
 
+	"github.com/JewlyTwin/be_booking_sign/actions/handlers"
 	"github.com/JewlyTwin/be_booking_sign/models"
 	"github.com/gobuffalo/buffalo-pop/pop/popmw"
 	csrf "github.com/gobuffalo/mw-csrf"
@@ -59,6 +60,7 @@ func App() *buffalo.App {
 		app.Use(translations())
 
 		app.GET("/", HomeHandler)
+		app.GET("/test", handlers.Hello)
 
 		app.ServeFiles("/", assetsBox) // serve files from the public directory
 	}
