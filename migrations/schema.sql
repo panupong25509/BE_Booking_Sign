@@ -35,6 +35,47 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: bookings; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.bookings (
+    id integer NOT NULL,
+    booking_code character varying(255) NOT NULL,
+    applicant character varying(255) NOT NULL,
+    organization character varying(255) NOT NULL,
+    first_date timestamp without time zone NOT NULL,
+    last_date timestamp without time zone NOT NULL,
+    sign_id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.bookings OWNER TO postgres;
+
+--
+-- Name: bookings_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.bookings_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.bookings_id_seq OWNER TO postgres;
+
+--
+-- Name: bookings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.bookings_id_seq OWNED BY public.bookings.id;
+
+
+--
 -- Name: club_in_schools; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -144,10 +185,25 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgres;
 
 --
+-- Name: bookings id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.bookings ALTER COLUMN id SET DEFAULT nextval('public.bookings_id_seq'::regclass);
+
+
+--
 -- Name: signs id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.signs ALTER COLUMN id SET DEFAULT nextval('public.signs_id_seq'::regclass);
+
+
+--
+-- Name: bookings bookings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_pkey PRIMARY KEY (id);
 
 
 --
@@ -172,6 +228,13 @@ ALTER TABLE ONLY public.schools
 
 ALTER TABLE ONLY public.signs
     ADD CONSTRAINT signs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bookings_booking_code_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX bookings_booking_code_idx ON public.bookings USING btree (booking_code);
 
 
 --

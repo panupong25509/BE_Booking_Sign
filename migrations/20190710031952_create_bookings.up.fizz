@@ -1,0 +1,12 @@
+create_table("bookings") {
+	t.Column("id", "integer", {primary: true})
+	t.Column("booking_code", "string", {})
+	t.Column("applicant", "string", {})
+	t.Column("organization", "string", {})
+	t.Column("first_date", "timestamp", {})
+	t.Column("last_date", "timestamp", {})
+	t.Column("sign_id", "integer", {})
+	t.Foreignkey("sign_id", {"signs":"id"}, {})
+	t.Index("booking_code", {"unique": true})
+	t.Timestamps()
+}
