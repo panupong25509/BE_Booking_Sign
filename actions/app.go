@@ -1,25 +1,26 @@
 package actions
 
 import (
+	"github.com/JewlyTwin/be_booking_sign/actions/handlers"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/envy"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 	"github.com/unrolled/secure"
 
-	"github.com/JewlyTwin/be_booking_sign/actions/handlers"
-	"github.com/JewlyTwin/be_booking_sign/models"
+	// "github.com/JewlyTwin/practice/models"
 	"github.com/gobuffalo/buffalo-pop/pop/popmw"
-	csrf "github.com/gobuffalo/mw-csrf"
-	i18n "github.com/gobuffalo/mw-i18n"
-	"github.com/gobuffalo/packr/v2"
+	contenttype "github.com/gobuffalo/mw-contenttype"
+	"github.com/gobuffalo/x/sessions"
+	"github.com/rs/cors"
+
+	"github.com/JewlyTwin/be_booking_sign/models"
 )
 
 // ENV is used to help switch settings based on where the
 // application is being run. Default is "development".
 var ENV = envy.Get("GO_ENV", "development")
 var app *buffalo.App
-var T *i18n.Translator
 
 // App is where all routes and middleware for buffalo
 // should be defined. This is the nerve center of your
@@ -37,8 +38,12 @@ var T *i18n.Translator
 func App() *buffalo.App {
 	if app == nil {
 		app = buffalo.New(buffalo.Options{
-			Env:         ENV,
-			SessionName: "_be_booking_sign_session",
+			Env:          ENV,
+			SessionStore: sessions.Null{},
+			PreWares: []buffalo.PreWare{
+				cors.Default().Handler,
+			},
+			SessionName: "_practice_session",
 		})
 
 		// Automatically redirect to SSL
@@ -47,37 +52,21 @@ func App() *buffalo.App {
 		// Log request parameters (filters apply).
 		app.Use(paramlogger.ParameterLogger)
 
-		// Protect against CSRF attacks. https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
-		// Remove to disable this.
-		app.Use(csrf.New)
+		// Set the request content type to JSON
+		app.Use(contenttype.Set("application/json"))
 
 		// Wraps each request in a transaction.
 		//  c.Value("tx").(*pop.Connection)
 		// Remove to disable this.
 		app.Use(popmw.Transaction(models.DB))
 
-		// Setup and use translations:
-		app.Use(translations())
-
-		app.GET("/", HomeHandler)
-		app.GET("/test", handlers.Hello)
-
-		app.ServeFiles("/", assetsBox) // serve files from the public directory
+		app.GET("/", handlers.Hello)
+		app.GET("/allsign", handlers.GetAllSign)
+		app.POST("/addsign", handlers.AddSign)
+		// app.POST("/testpost", handlers.HelloPost)
 	}
 
 	return app
-}
-
-// translations will load locale files, set up the translator `actions.T`,
-// and will return a middleware to use to load the correct locale for each
-// request.
-// for more information: https://gobuffalo.io/en/docs/localization
-func translations() buffalo.MiddlewareFunc {
-	var err error
-	if T, err = i18n.New(packr.New("app:locales", "../locales"), "en-US"); err != nil {
-		app.Stop(err)
-	}
-	return T.Middleware()
 }
 
 // forceSSL will return a middleware that will redirect an incoming request
