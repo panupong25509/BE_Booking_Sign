@@ -24,3 +24,11 @@ func GetAllSign(c buffalo.Context) interface{} {
 	db.All(&allSign)
 	return &allSign
 }
+func GetSignByName(c buffalo.Context) interface{} {
+	db := ConnectDB(c).(*pop.Connection)
+	data := DynamicPostForm(c)
+	sign := []models.Sign{}
+
+	_ = db.Where("sign_name in (?)", data["signname"].(string)).All(&sign)
+	return &sign[0]
+}

@@ -2,16 +2,22 @@ package models
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
-	"github.com/gofrs/uuid"
-	"time"
 )
 
 type Booking struct {
-	ID        uuid.UUID `json:"id" db:"id"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+	ID           int       `json:"id" db:"id"`
+	Code         string    `json:"booking_code" db:"booking_code"`
+	Applicant    string    `json:"applicant" db:"applicant"`
+	Organization string    `json:"organization" db:"organization"`
+	FirstDate    time.Time `json:"first_date" db:"first_date"`
+	LastDate     time.Time `json:"last_date" db:"last_date"`
+	SignID       int       `json:"sign_id" db:"sign_id"`
+	CreatedAt    time.Time `json:"-" db:"created_at"`
+	UpdatedAt    time.Time `json:"-" db:"updated_at"`
 }
 
 // String is not required by pop and may be deleted
