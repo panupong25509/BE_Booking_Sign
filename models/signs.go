@@ -12,6 +12,7 @@ type Sign struct {
 	ID        int       `json:"id" db:"id"`
 	Name      string    `json:"name" db:"sign_name"`
 	Location  string    `json:"location" db:"location"`
+	Booking   []Booking `json:"booking" db:"-"  has_many:"bookings"`
 	CreatedAt time.Time `json:"-" db:"created_at"`
 	UpdatedAt time.Time `json:"-" db:"updated_at"`
 }

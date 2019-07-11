@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"log"
+
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
 
@@ -21,7 +23,8 @@ func GetAllSign(c buffalo.Context) interface{} {
 	// data := DynamicPostForm(c)
 	allSign := []models.Sign{}
 
-	db.All(&allSign)
+	err := db.Eager().All(&allSign)
+	log.Print(err)
 	return &allSign
 }
 func GetSignByName(c buffalo.Context) interface{} {
@@ -31,4 +34,11 @@ func GetSignByName(c buffalo.Context) interface{} {
 
 	_ = db.Where("sign_name in (?)", data["signname"].(string)).All(&sign)
 	return &sign[0]
+}
+func GetSignById(c buffalo.Context, id int) models.Sign {
+	db := ConnectDB(c).(*pop.Connection)
+	sign := models.Sign{}
+
+	_ = db.Find(&sign, id)
+	return sign
 }

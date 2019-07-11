@@ -15,7 +15,8 @@ type Booking struct {
 	Organization string    `json:"organization" db:"organization"`
 	FirstDate    time.Time `json:"first_date" db:"first_date"`
 	LastDate     time.Time `json:"last_date" db:"last_date"`
-	SignID       int       `json:"sign_id" db:"sign_id"`
+	SignID       int       `json:"sign_id" db:"sign_id" fk_id:"id"`
+	Sign         Sign      `json:"sign" db:"-"`
 	CreatedAt    time.Time `json:"-" db:"created_at"`
 	UpdatedAt    time.Time `json:"-" db:"updated_at"`
 }
@@ -52,3 +53,20 @@ func (b *Booking) ValidateCreate(tx *pop.Connection) (*validate.Errors, error) {
 func (b *Booking) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
+
+// func (b *Booking) GetCSign(c *buffalo.Context) error {
+// 	db, _ := c.Value("tx").(*pop.Connection)
+// 	sign := Sign{}
+// 	if len(s.Clubs) > 0 {
+// 		for _, value := range s.Clubs {
+// 			// log.Println(value.Club_id)
+// 			// id, _ := uuid.FromString(value.Club_id)
+// 			db.Find(&club ,value.Club_id)
+// 			// log.Println(&club)
+// 			s.Club = append(s.Club, ClubForShow{club.ID, club.Name})
+// 		}
+// 	}
+// 	log.Println(s.Club)
+
+// 	return nil
+// }
