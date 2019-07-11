@@ -22,10 +22,10 @@ func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
 		return nil, err
 	}
 	sign := signInterface.(*models.Sign)
-	if !CheckBookingTime(data, sign.ID, db) {
+	newBooking.CreateBookingModel(data, code, sign.ID)
+	if !ValidateBookingTime(&newBooking, db) {
 		return nil, models.Error{400, "The date of booking is not available"}
 	}
-	newBooking.CreateBookingModel(data, code, sign.ID)
 	db.Create(&newBooking)
 	return &newBooking, nil
 }
@@ -35,9 +35,9 @@ func GenCodeBooking(data map[string]interface{}) string {
 	return code
 }
 
-func CheckBookingTime(data map[string]interface{}, signid int, db *pop.Connection) bool {
+func ValidateBookingTime(newBooking *models.Booking, db *pop.Connection) bool {
 	bookings := models.Bookings{}
-	_ = db.Q().Where("last_date >= (?) and first_date <= (?) and sign_id = (?)", data["firstdate"].(string), data["lastdate"].(string), signid).All(&bookings)
+	_ = db.Q().Where("last_date >= (?) and first_date <= (?) and sign_id = (?)", newBooking.FirstDate, newBooking.LastDate, newBooking.SignID).All(&bookings)
 	if len(bookings) != 0 {
 		return false
 	}
