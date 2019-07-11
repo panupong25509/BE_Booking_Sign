@@ -7,9 +7,9 @@ import (
 func DynamicPostForm(c buffalo.Context) map[string]interface{} {
 	c.Request().ParseForm()
 	param := c.Request().PostForm
-	v := make(map[string]interface{})
+	m := make(map[string]interface{})
 	for key, value := range param {
-		v[key] = value[0]
+		m[key] = value[0]
 	}
-	return v
+	return m
 }
