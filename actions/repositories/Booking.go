@@ -43,7 +43,7 @@ func GetAllBooking(c buffalo.Context) (*models.Bookings, interface{}) {
 	}
 	allBooking := models.Bookings{}
 	db.All(&allBooking)
-	bookings := []models.Booking{}
+	bookings := models.Bookings{}
 	for _, value := range allBooking {
 		sign := GetSignById(c, value.SignID)
 		value.Sign = sign
