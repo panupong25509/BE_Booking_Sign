@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"github.com/gobuffalo/buffalo"
-
 	"github.com/JewlyTwin/be_booking_sign/models"
 )
 
@@ -12,9 +11,18 @@ func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
 		return nil, err
 	}
 	data := DynamicPostForm(c)
-	newSign := models.Sign{Name: data["name"].(string), Location: data["location"].(string)}
-	db.Create(&newSign)
-	return &newSign, nil
+	sign := models.Sign{}
+	if sign.CheckParamPostForm(data) {
+		newSign := models.Sign{Name: data["name"].(string), Location: data["location"].(string)}
+		samename := db.Create(&newSign)
+		if samename != nil {
+			status := models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
+			return nil, status
+		}
+		return &newSign, nil
+	}
+	status := models.Error{400, "อะไรไม่รู้"}
+	return nil, status
 }
 
 func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
