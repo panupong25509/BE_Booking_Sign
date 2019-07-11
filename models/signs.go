@@ -9,9 +9,11 @@ import (
 )
 
 type Sign struct {
-	ID        int       `json:"id" db:"id"`
-	Name      string    `json:"name" db:"sign_name"`
-	Location  string    `json:"location" db:"location"`
+	ID        			int       `json:"id" db:"id"`
+	Name      			string    `json:"name" db:"sign_name"`
+	Location  			string    `json:"location" db:"location"`
+	Limitdate  			int    		`json:"limitdate" db:"limitdate"`
+	Beforebooking	  int 		  `json:"beforebooking" db:"beforebooking"`
 	Booking   []Booking `json:"booking" db:"-"  has_many:"bookings"`
 	CreatedAt time.Time `json:"-" db:"created_at"`
 	UpdatedAt time.Time `json:"-" db:"updated_at"`
