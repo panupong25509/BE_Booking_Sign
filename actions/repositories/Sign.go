@@ -20,7 +20,7 @@ func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
 		}
 		return &newSign, nil
 	}
-	return nil, models.Error{400, "อะไรไม่รู้"}
+	return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 }
 
 func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
