@@ -49,3 +49,8 @@ func (s *Sign) ValidateCreate(tx *pop.Connection) (*validate.Errors, error) {
 func (s *Sign) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
+
+
+func (s *Sign) AfterFind()  error {
+	return nil
+}

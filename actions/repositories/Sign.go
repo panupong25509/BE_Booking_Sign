@@ -20,9 +20,9 @@ func GetAllSign(c buffalo.Context) interface{} {
 	allSign := []models.Sign{}
 	err := db.Eager().All(&allSign)
 	if err != nil {
-		return &allSign
+		return nil
 	}
-	return nil
+	return &allSign
 }
 
 func GetSignByName(c buffalo.Context) interface{} {

@@ -35,7 +35,7 @@ func CheckBookingTime(f time.Time, l time.Time, signid int, db *pop.Connection) 
 
 func GetAllBooking(c buffalo.Context) interface{} {
 	db := ConnectDB(c).(*pop.Connection)
-	allBooking := []models.Booking{}
+	allBooking := models.Bookings{}
 	db.All(&allBooking)
 	bookings := []models.Booking{}
 	for _, value := range allBooking {
