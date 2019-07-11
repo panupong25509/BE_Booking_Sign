@@ -7,9 +7,9 @@ import (
 )
 
 func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, err
+	db, errdb := ConnectDB(c)
+	if errdb != nil {
+		return nil, errdb
 	}
 	data := DynamicPostForm(c)
 	newBooking := models.Booking{}
@@ -17,16 +17,19 @@ func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
 		return nil, models.Error{400, "param not complete"}
 	}
 	code := GenCodeBooking(data)
-	signInterface, err := GetSignByName(c)
-	if err != nil {
-		return nil, err
+	signInterface, errsignInterface := GetSignByName(c)
+	if errsignInterface != nil {
+		return nil, errsignInterface
 	}
 	sign := signInterface.(*models.Sign)
 	newBooking.CreateBookingModel(data, code, sign.ID)
 	if !ValidateBookingTime(&newBooking, db) {
 		return nil, models.Error{400, "The date of booking is not available"}
 	}
-	db.Create(&newBooking)
+	errdbcreate := db.Create(&newBooking)
+	if errdbcreate != nil {
+		return nil, models.Error{500, "Can't Create to Database"}
+	}
 	return &newBooking, nil
 }
 
@@ -50,7 +53,10 @@ func GetAllBooking(c buffalo.Context) (*models.Bookings, interface{}) {
 		return nil, err
 	}
 	allBooking := models.Bookings{}
-	db.All(&allBooking)
+	errselectall := db.All(&allBooking)
+	if errselectall != nil {
+		return nil, models.Error{500, "Can't Select data form Database"}
+	}
 	bookings := models.Bookings{}
 	for _, value := range allBooking {
 		sign, err := GetSignById(c, value.SignID)
