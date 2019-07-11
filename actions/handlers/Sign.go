@@ -6,10 +6,10 @@ import (
 )
 
 func AddSign(c buffalo.Context) error {
-	newSign := repositories.AddSign(c)
+	newSign, err := repositories.AddSign(c)
 	return c.Render(200, r.JSON(newSign))
 }
 func GetAllSign(c buffalo.Context) error {
-	allSign := repositories.GetAllSign(c)
+	allSign, err := repositories.GetAllSign(c)
 	return c.Render(200, r.JSON(allSign))
 }
