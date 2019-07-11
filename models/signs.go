@@ -54,3 +54,14 @@ func (s *Sign) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 func (s *Sign) AfterFind()  error {
 	return nil
 }
+
+
+func (s *Sign) CheckParamPostForm(data map[string]interface{})  bool {
+	if data["name"] == nil {
+		return false
+	}
+	if data["location"] == nil {
+		return false
+	}
+	return true
+}
