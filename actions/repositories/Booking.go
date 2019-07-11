@@ -15,7 +15,11 @@ func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
 	}
 	data := DynamicPostForm(c)
 	code := data["signname"].(string) + "CODE" + data["firstdate"].(string) + data["lastdate"].(string)
-	sign := GetSignByName(c).(*models.Sign)
+	signInterface, err := GetSignByName(c)
+	if err != nil {
+		return nil, err
+	}
+	sign := signInterface.(*models.Sign)
 	firstdate, _ := time.Parse("2006-01-02", data["firstdate"].(string))
 	lastdate, _ := time.Parse("2006-01-02", data["lastdate"].(string))
 	check := CheckBookingTime(firstdate, lastdate, sign.ID, db)
@@ -45,8 +49,11 @@ func GetAllBooking(c buffalo.Context) (*models.Bookings, interface{}) {
 	db.All(&allBooking)
 	bookings := models.Bookings{}
 	for _, value := range allBooking {
-		sign := GetSignById(c, value.SignID)
-		value.Sign = sign
+		sign, err := GetSignById(c, value.SignID)
+		if err != nil {
+			return nil, err
+		}
+		value.Sign = sign.(models.Sign)
 		bookings = append(bookings, value)
 	}
 	return &bookings, nil

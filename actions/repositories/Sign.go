@@ -7,9 +7,9 @@ import (
 )
 
 func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
-	db , err := ConnectDB(c)
+	db, err := ConnectDB(c)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	data := DynamicPostForm(c)
 	newSign := models.Sign{Name: data["name"].(string), Location: data["location"].(string)}
@@ -17,23 +17,23 @@ func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
 	return &newSign, nil
 }
 
-// func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
-// 	db , errr := ConnectDB(c)
-// 	if errr != nil {
-// 		return nil,errr
-// 	}
-// 	allSign := []models.Sign{}
-// 	err := db.Eager().All(&allSign)
-// 	if err != nil {
-// 		return nil, nil
-// 	}
-// 	return &allSign, nil
-// }
+func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
+	db, errr := ConnectDB(c)
+	if errr != nil {
+		return nil, errr
+	}
+	allSign := []models.Sign{}
+	err := db.Eager().All(&allSign)
+	if err != nil {
+		return nil, nil
+	}
+	return &allSign, nil
+}
 
 func GetSignByName(c buffalo.Context) (interface{}, interface{}) {
-	db := ConnectDB(c)
+	db, err := ConnectDB(c)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	data := DynamicPostForm(c)
 	sign := []models.Sign{}
@@ -41,10 +41,10 @@ func GetSignByName(c buffalo.Context) (interface{}, interface{}) {
 	return &sign[0], nil
 }
 
-func GetSignById(c buffalo.Context, id int) (*models.Sign, interface{}) {
-	db := ConnectDB(c)
+func GetSignById(c buffalo.Context, id int) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	sign := models.Sign{}
 	_ = db.Find(&sign, id)
