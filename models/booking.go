@@ -54,19 +54,29 @@ func (b *Booking) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
-// func (b *Booking) GetCSign(c *buffalo.Context) error {
-// 	db, _ := c.Value("tx").(*pop.Connection)
-// 	sign := Sign{}
-// 	if len(s.Clubs) > 0 {
-// 		for _, value := range s.Clubs {
-// 			// log.Println(value.Club_id)
-// 			// id, _ := uuid.FromString(value.Club_id)
-// 			db.Find(&club ,value.Club_id)
-// 			// log.Println(&club)
-// 			s.Club = append(s.Club, ClubForShow{club.ID, club.Name})
-// 		}
-// 	}
-// 	log.Println(s.Club)
-
-// 	return nil
-// }
+func (b *Booking) CheckParamPostForm(data map[string]interface{}) bool {
+	if data["signname"] == nil {
+		return false
+	}
+	if data["applicant"] == nil {
+		return false
+	}
+	if data["organization"] == nil {
+		return false
+	}
+	if data["firstdate"] == nil {
+		return false
+	}
+	if data["lastdate"] == nil {
+		return false
+	}
+	return true
+}
+func (b *Booking) CreateBookingModel(data map[string]interface{}, code string, signid int) {
+	b.Code = code
+	b.Applicant = data["applicant"].(string)
+	b.Organization = data["organization"].(string)
+	b.FirstDate, _ = time.Parse("2006-01-02", data["firstdate"].(string))
+	b.LastDate, _ = time.Parse("2006-01-02", data["lastdate"].(string))
+	b.SignID = signid
+}
