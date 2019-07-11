@@ -16,13 +16,11 @@ func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
 		newSign := models.Sign{Name: data["name"].(string), Location: data["location"].(string)}
 		samename := db.Create(&newSign)
 		if samename != nil {
-			status := models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
-			return nil, status
+			return nil, models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
 		}
 		return &newSign, nil
 	}
-	status := models.Error{400, "อะไรไม่รู้"}
-	return nil, status
+	return nil, models.Error{400, "อะไรไม่รู้"}
 }
 
 func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
