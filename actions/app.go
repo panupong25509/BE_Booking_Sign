@@ -63,7 +63,6 @@ func App() *buffalo.App {
 		app.GET("/", handlers.Hello)
 		app.GET("/allsign", handlers.GetAllSign)
 		app.POST("/addsign", handlers.AddSign)
-		app.POST("/sign", handlers.GetSignByName)
 		app.POST("/addbooking", handlers.AddBooking)
 		app.GET("/allbooking", handlers.GetAllBooking)
 	}
