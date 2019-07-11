@@ -16,7 +16,7 @@ func AddBooking(c buffalo.Context) error {
 }
 
 func GetAllBooking(c buffalo.Context) error {
-	allBooking := repositories.GetAllBooking(c)
+	allBooking, err := repositories.GetAllBooking(c)
 	if err != nil {
 		err = err.(models.Error)
 		return c.Render(err.Code, r.JSON(err.Message)
