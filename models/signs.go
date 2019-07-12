@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"time"
+	"strconv"
 
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
@@ -66,4 +67,11 @@ func (s *Sign) CheckParamPostForm(data map[string]interface{})  bool {
 		return false
 	}
 	return true
+}
+
+func (s *Sign) CreateBookingModel(data map[string]interface{}) {
+	s.Name = data["name"].(string)
+	s.Location = data["location"].(string)
+	s.Limitdate, _ = strconv.Atoi(data["limitdate"].(string))
+	s.Beforebooking, _ = strconv.Atoi(data["beforebooking"].(string))
 }
