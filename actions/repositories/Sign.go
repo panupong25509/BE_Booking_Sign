@@ -1,9 +1,10 @@
 package repositories
 
 import (
+	"strconv"
+
 	"github.com/JewlyTwin/be_booking_sign/models"
 	"github.com/gobuffalo/buffalo"
-	"strconv"
 )
 
 func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
@@ -65,7 +66,7 @@ func DeleteSignByID(c buffalo.Context) (interface{}, interface{}) {
 	}
 	data := DynamicPostForm(c)
 	sign := models.Sign{}
-	id ,_ := strconv.Atoi(data["id"].(string))
+	id, _ := strconv.Atoi(data["id"].(string))
 	_ = db.Find(&sign, id)
 	_ = db.Destroy(&sign)
 	return &sign, nil

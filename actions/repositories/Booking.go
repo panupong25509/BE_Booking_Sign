@@ -30,6 +30,7 @@ func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
 	if errdbcreate != nil {
 		return nil, models.Error{500, "Can't Create to Database"}
 	}
+	newBooking.Sign = models.Sign{Name: sign.Name, Location: sign.Location, Limitdate: sign.Limitdate, Beforebooking: sign.Beforebooking}
 	return &newBooking, nil
 }
 
