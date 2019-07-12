@@ -1,6 +1,11 @@
 package repositories
 
 import (
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/JewlyTwin/be_booking_sign/models"
@@ -15,14 +20,56 @@ func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
 	data := DynamicPostForm(c)
 	sign := models.Sign{}
 	if sign.CheckParamPostForm(data) {
-		sign.CreateBookingModel(data)
-		samename := db.Create(&sign)
-		if samename != nil {
+		err, _ := GetSignByName(c)
+		if err != nil {
 			return nil, models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
 		}
+		file, err := UploadImg(c, data)
+		if err != nil {
+			return nil, err
+		}
+		sign.CreateSignModel(data, file.(string))
+		db.Create(&sign)
 		return &sign, nil
 	}
 	return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
+}
+
+func UploadImg(c buffalo.Context, sign *models.Sign) (interface{}, interface{}) {
+	f, err := c.File("file")
+	tempFile, err := ioutil.TempFile(os.TempDir(), sign.Name+`-*.jpg`)
+	if err != nil {
+		log.Print(err)
+		return nil, models.Error{500, "can't add sign"}
+	}
+	defer tempFile.Close()
+
+	fileBytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Print(err)
+		return nil, models.Error{500, "can't add sign"}
+	}
+
+	tempFile.Write(fileBytes)
+	in, err := os.Open(tempFile.Name())
+	if err != nil {
+		log.Print(err)
+		return nil, models.Error{500, "can't add sign"}
+	}
+	defer in.Close()
+	_, file := filepath.Split(tempFile.Name())
+	out, err := os.Create(`D:\fe_booking_sign\public\img\` + file)
+	if err != nil {
+		log.Print(err)
+		return nil, models.Error{500, "can't add sign"}
+	}
+	if _, err = io.Copy(out, in); err != nil {
+		log.Print(err)
+		return nil, models.Error{500, "can't add sign"}
+	}
+
+	return file, nil
+
 }
 
 func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
