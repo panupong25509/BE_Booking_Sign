@@ -20,11 +20,15 @@ func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
 	data := DynamicPostForm(c)
 	sign := models.Sign{}
 	if sign.CheckParamPostForm(data) {
-		err, _ := GetSignByName(c)
+		samename, err := GetSignByName(c)
 		if err != nil {
+			return nil, err
+		}
+		if samename != nil {
 			return nil, models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
 		}
-		file, err := UploadImg(c, data)
+		log.Print(data["signname"].(string))
+		file, err := UploadImg(c, data["signname"].(string))
 		if err != nil {
 			return nil, err
 		}
@@ -35,38 +39,25 @@ func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
 	return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 }
 
-func UploadImg(c buffalo.Context, sign *models.Sign) (interface{}, interface{}) {
+func UploadImg(c buffalo.Context, sign string) (interface{}, interface{}) {
 	f, err := c.File("file")
-	tempFile, err := ioutil.TempFile(os.TempDir(), sign.Name+`-*.jpg`)
-	if err != nil {
-		log.Print(err)
-		return nil, models.Error{500, "can't add sign"}
-	}
+	log.Print(sign)
+	tempFile, err := ioutil.TempFile(os.TempDir(), sign+`-*.jpg`)
 	defer tempFile.Close()
 
 	fileBytes, err := ioutil.ReadAll(f)
-	if err != nil {
-		log.Print(err)
-		return nil, models.Error{500, "can't add sign"}
-	}
 
 	tempFile.Write(fileBytes)
 	in, err := os.Open(tempFile.Name())
-	if err != nil {
-		log.Print(err)
-		return nil, models.Error{500, "can't add sign"}
-	}
 	defer in.Close()
 	_, file := filepath.Split(tempFile.Name())
+	log.Print(file)
 	out, err := os.Create(`D:\fe_booking_sign\public\img\` + file)
-	if err != nil {
-		log.Print(err)
-		return nil, models.Error{500, "can't add sign"}
-	}
 	if _, err = io.Copy(out, in); err != nil {
 		log.Print(err)
 		return nil, models.Error{500, "can't add sign"}
 	}
+	log.Print("img")
 
 	return file, nil
 
@@ -92,8 +83,12 @@ func GetSignByName(c buffalo.Context) (interface{}, interface{}) {
 	}
 	data := DynamicPostForm(c)
 	sign := []models.Sign{}
+	log.Print(data["signname"].(string))
 	_ = db.Where("sign_name in (?)", data["signname"].(string)).All(&sign)
-	return &sign[0], nil
+	if len(sign) != 0 {
+		return &sign[0], nil
+	}
+	return nil, nil
 }
 
 func GetSignById(c buffalo.Context, id int) (interface{}, interface{}) {

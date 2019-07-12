@@ -59,17 +59,23 @@ func (s *Sign) AfterFind() error {
 }
 
 func (s *Sign) CheckParamPostForm(data map[string]interface{}) bool {
-	if data["name"] == nil {
+	if data["signname"] == nil {
 		return false
 	}
 	if data["location"] == nil {
 		return false
 	}
+	if data["limitdate"] == nil {
+		return false
+	}
+	if data["beforebooking"] == nil {
+		return false
+	}
 	return true
 }
 
-func (s *Sign) CreateBookingModel(data map[string]interface{}, namepic string) {
-	s.Name = data["name"].(string)
+func (s *Sign) CreateSignModel(data map[string]interface{}, namepic string) {
+	s.Name = data["signname"].(string)
 	s.Location = data["location"].(string)
 	s.Limitdate, _ = strconv.Atoi(data["limitdate"].(string))
 	s.Beforebooking, _ = strconv.Atoi(data["beforebooking"].(string))
