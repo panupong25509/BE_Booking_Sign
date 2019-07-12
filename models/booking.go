@@ -72,11 +72,12 @@ func (b *Booking) CheckParamPostForm(data map[string]interface{}) bool {
 	}
 	return true
 }
-func (b *Booking) CreateBookingModel(data map[string]interface{}, code string, signid int) {
+func (b *Booking) CreateBookingModel(data map[string]interface{}, code string, sign Sign) {
 	b.Code = code
 	b.Applicant = data["applicant"].(string)
 	b.Organization = data["organization"].(string)
 	b.FirstDate, _ = time.Parse("2006-01-02", data["firstdate"].(string))
 	b.LastDate, _ = time.Parse("2006-01-02", data["lastdate"].(string))
-	b.SignID = signid
+	b.SignID = sign.ID
+	b.Sign = Sign{Name: sign.Name, Location: sign.Location, Limitdate: sign.Limitdate, Beforebooking: sign.Beforebooking}
 }

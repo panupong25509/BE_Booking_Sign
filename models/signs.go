@@ -2,22 +2,23 @@ package models
 
 import (
 	"encoding/json"
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/gobuffalo/pop"
 	"github.com/gobuffalo/validate"
 )
 
 type Sign struct {
-	ID        			int       `json:"id" db:"id"`
-	Name      			string    `json:"name" db:"sign_name"`
-	Location  			string    `json:"location" db:"location"`
-	Limitdate  			int    		`json:"limitdate" db:"limitdate"`
-	Beforebooking	  int 		  `json:"beforebooking" db:"beforebooking"`
-	Booking   []Booking `json:"booking" db:"-"  has_many:"bookings"`
-	CreatedAt time.Time `json:"-" db:"created_at"`
-	UpdatedAt time.Time `json:"-" db:"updated_at"`
+	ID            int       `json:"id" db:"id"`
+	Name          string    `json:"name" db:"sign_name"`
+	Location      string    `json:"location" db:"location"`
+	Limitdate     int       `json:"limitdate" db:"limitdate"`
+	Beforebooking int       `json:"beforebooking" db:"beforebooking"`
+	Picture       string    `json:"picture" db:"picture"`
+	Booking       []Booking `json:"booking" db:"-"  has_many:"bookings"`
+	CreatedAt     time.Time `json:"-" db:"created_at"`
+	UpdatedAt     time.Time `json:"-" db:"updated_at"`
 }
 
 // String is not required by pop and may be deleted
@@ -53,13 +54,11 @@ func (s *Sign) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
-
-func (s *Sign) AfterFind()  error {
+func (s *Sign) AfterFind() error {
 	return nil
 }
 
-
-func (s *Sign) CheckParamPostForm(data map[string]interface{})  bool {
+func (s *Sign) CheckParamPostForm(data map[string]interface{}) bool {
 	if data["name"] == nil {
 		return false
 	}
@@ -69,9 +68,10 @@ func (s *Sign) CheckParamPostForm(data map[string]interface{})  bool {
 	return true
 }
 
-func (s *Sign) CreateBookingModel(data map[string]interface{}) {
+func (s *Sign) CreateBookingModel(data map[string]interface{}, namepic string) {
 	s.Name = data["name"].(string)
 	s.Location = data["location"].(string)
 	s.Limitdate, _ = strconv.Atoi(data["limitdate"].(string))
 	s.Beforebooking, _ = strconv.Atoi(data["beforebooking"].(string))
+	s.Picture = namepic
 }

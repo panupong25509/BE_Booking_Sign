@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/JewlyTwin/be_booking_sign/models"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
@@ -22,15 +24,14 @@ func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
 		return nil, errsignInterface
 	}
 	sign := signInterface.(*models.Sign)
-	newBooking.CreateBookingModel(data, code, sign.ID)
-	if !ValidateBookingTime(&newBooking, db) {
+	newBooking.CreateBookingModel(data, code, *sign)
+	if !ValidateBookingTime(&newBooking, db, *sign) {
 		return nil, models.Error{400, "The date of booking is not available"}
 	}
 	errdbcreate := db.Create(&newBooking)
 	if errdbcreate != nil {
 		return nil, models.Error{500, "Can't Create to Database"}
 	}
-	newBooking.Sign = models.Sign{Name: sign.Name, Location: sign.Location, Limitdate: sign.Limitdate, Beforebooking: sign.Beforebooking}
 	return &newBooking, nil
 }
 
@@ -39,10 +40,16 @@ func GenCodeBooking(data map[string]interface{}) string {
 	return code
 }
 
-func ValidateBookingTime(newBooking *models.Booking, db *pop.Connection) bool {
+func ValidateBookingTime(newBooking *models.Booking, db *pop.Connection, sign models.Sign) bool {
 	bookings := models.Bookings{}
 	_ = db.Q().Where("last_date >= (?) and first_date <= (?) and sign_id = (?)", newBooking.FirstDate, newBooking.LastDate, newBooking.SignID).All(&bookings)
 	if len(bookings) != 0 {
+		return false
+	}
+	if CheckDate(newBooking.FirstDate, newBooking.LastDate) > sign.Limitdate {
+		return false
+	}
+	if CheckDate(time.Now(), newBooking.FirstDate) < sign.Beforebooking {
 		return false
 	}
 	return true
@@ -68,4 +75,9 @@ func GetAllBooking(c buffalo.Context) (*models.Bookings, interface{}) {
 		bookings = append(bookings, value)
 	}
 	return &bookings, nil
+}
+
+func CheckDate(D1 time.Time, D2 time.Time) int {
+	diff := D2.Sub(D1)
+	return int(diff.Hours()/24) + 1
 }

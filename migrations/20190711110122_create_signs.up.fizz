@@ -4,6 +4,7 @@ create_table("signs") {
 	t.Column("location", "string", {})
 	t.Column("limitdate", "integer", {})
 	t.Column("beforebooking", "integer", {})
+	t.Column("picture", "string", {})
 	t.Index("sign_name", {"unique": true})
 	t.Timestamps()
 }
