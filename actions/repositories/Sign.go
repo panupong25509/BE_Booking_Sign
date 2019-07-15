@@ -27,7 +27,7 @@ func AddSign(c buffalo.Context) (interface{}, interface{}) {
 		return nil, err
 	}
 	if samename != nil {
-		return nil, models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
+		return nil, models.Error{400, "ชื่อป้ายนี้มีอยู่ในระบบแล้ว"}
 	}
 	file, err := UploadImg(c, data["signname"].(string))
 	if err != nil {
@@ -63,12 +63,12 @@ func UploadImg(c buffalo.Context, sign string) (interface{}, interface{}) {
 }
 
 func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
-	db, errr := ConnectDB(c)
-	if errr != nil {
-		return nil, errr
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
 	}
-	allSign := []models.Sign{}
-	err := db.Eager().All(&allSign)
+	allSign := models.AllSign{}
+	err = db.All(&allSign.Signs)
 	if err != nil {
 		return nil, nil
 	}
@@ -109,6 +109,10 @@ func DeleteSign(c buffalo.Context) (interface{}, interface{}) {
 	sign := models.Sign{}
 	id, _ := strconv.Atoi(data["id"].(string))
 	_ = db.Find(&sign, id)
+	if sign.ID == 0 {
+		return resSuccess("ไม่มีป้ายนี้ใน Database"), nil
+	}
+	os.Remove(`D:\fe_booking_sign\public\img\` + sign.Picture)
 	_ = db.Destroy(&sign)
-	return &sign, nil
+	return resSuccess(nil), nil
 }

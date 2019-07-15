@@ -16,9 +16,13 @@ type Sign struct {
 	Limitdate     int       `json:"limitdate" db:"limitdate"`
 	Beforebooking int       `json:"beforebooking" db:"beforebooking"`
 	Picture       string    `json:"picture" db:"picture"`
-	Booking       []Booking `json:"booking" db:"-"  has_many:"bookings"`
+	Booking       []Booking `json:"-" db:"-"  has_many:"bookings"`
 	CreatedAt     time.Time `json:"-" db:"created_at"`
 	UpdatedAt     time.Time `json:"-" db:"updated_at"`
+}
+
+type AllSign struct {
+	Signs Signs `json:"signs"`
 }
 
 // String is not required by pop and may be deleted
