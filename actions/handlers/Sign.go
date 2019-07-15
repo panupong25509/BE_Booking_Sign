@@ -25,7 +25,7 @@ func GetAllSign(c buffalo.Context) error {
 }
 
 func DeleteSign(c buffalo.Context) error {
-	destroy, err := repositories.DeleteSignByID(c)
+	destroy, err := repositories.DeleteSign(c)
 	if err != nil {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status.Message))
