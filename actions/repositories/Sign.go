@@ -12,31 +12,30 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-func AddSign(c buffalo.Context) (*models.Sign, interface{}) {
+func AddSign(c buffalo.Context) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
 	data := DynamicPostForm(c)
 	sign := models.Sign{}
-	if sign.CheckParamPostForm(data) {
-		samename, err := GetSignByName(c)
-		if err != nil {
-			return nil, err
-		}
-		if samename != nil {
-			return nil, models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
-		}
-		log.Print(data["signname"].(string))
-		file, err := UploadImg(c, data["signname"].(string))
-		if err != nil {
-			return nil, err
-		}
-		sign.CreateSignModel(data, file.(string))
-		db.Create(&sign)
-		return &sign, nil
+	if !sign.CheckParamPostForm(data) {
+		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
-	return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
+	samename, err := GetSignByName(c)
+	if err != nil {
+		return nil, err
+	}
+	if samename != nil {
+		return nil, models.Error{500, "ชื่อนี้เคยสร้างไปแล้ว"}
+	}
+	file, err := UploadImg(c, data["signname"].(string))
+	if err != nil {
+		return nil, err
+	}
+	sign.CreateSignModel(data, file.(string))
+	db.Create(&sign)
+	return resSuccess(nil), nil
 }
 
 func UploadImg(c buffalo.Context, sign string) (interface{}, interface{}) {
@@ -101,7 +100,7 @@ func GetSignById(c buffalo.Context, id int) (interface{}, interface{}) {
 	return sign, nil
 }
 
-func DeleteSignByID(c buffalo.Context) (interface{}, interface{}) {
+func DeleteSign(c buffalo.Context) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
