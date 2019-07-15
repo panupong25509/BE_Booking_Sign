@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/JewlyTwin/be_booking_sign/models"
@@ -8,7 +9,7 @@ import (
 	"github.com/gobuffalo/pop"
 )
 
-func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
+func AddBooking(c buffalo.Context) (interface{}, interface{}) {
 	db, errdb := ConnectDB(c)
 	if errdb != nil {
 		return nil, errdb
@@ -19,14 +20,14 @@ func AddBooking(c buffalo.Context) (*models.Booking, interface{}) {
 		return nil, models.Error{400, "param not complete"}
 	}
 	code := GenCodeBooking(data)
-	signInterface, errsignInterface := GetSignByName(c)
-	if errsignInterface != nil {
-		return nil, errsignInterface
+	signInterface, _ := GetSignByName(c)
+	if signInterface == nil {
+		return nil, models.Error{400, "don't have this sign in database"}
 	}
 	sign := signInterface.(*models.Sign)
 	newBooking.CreateBookingModel(data, code, *sign)
 	if !ValidateBookingTime(&newBooking, db, *sign) {
-		return nil, models.Error{400, "The date of booking is not available"}
+		return nil, models.Error{400, "วันที่เช่าไม่ว่าง"}
 	}
 	errdbcreate := db.Create(&newBooking)
 	if errdbcreate != nil {
@@ -55,24 +56,24 @@ func ValidateBookingTime(newBooking *models.Booking, db *pop.Connection, sign mo
 	return true
 }
 
-func GetAllBooking(c buffalo.Context) (*models.Bookings, interface{}) {
+func GetAllBooking(c buffalo.Context) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	allBooking := models.Bookings{}
-	errselectall := db.All(&allBooking)
+	allBooking := models.Allbooking{}
+	errselectall := db.All(&allBooking.Booking)
 	if errselectall != nil {
 		return nil, models.Error{500, "Can't Select data form Database"}
 	}
-	bookings := models.Bookings{}
-	for _, value := range allBooking {
+	bookings := models.Allbooking{}
+	for _, value := range allBooking.Booking {
 		sign, err := GetSignById(c, value.SignID)
 		if err != nil {
 			return nil, err
 		}
 		value.Sign = sign.(models.Sign)
-		bookings = append(bookings, value)
+		bookings.Booking = append(bookings.Booking, value)
 	}
 	return &bookings, nil
 }
@@ -80,4 +81,20 @@ func GetAllBooking(c buffalo.Context) (*models.Bookings, interface{}) {
 func CheckDate(D1 time.Time, D2 time.Time) int {
 	diff := D2.Sub(D1)
 	return int(diff.Hours()/24) + 1
+}
+
+func DeleteBooking(c buffalo.Context) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, models.Error{500, "Can't connect Database"}
+	}
+	data := DynamicPostForm(c)
+	booking := models.Booking{}
+	id, _ := strconv.Atoi(data["id"].(string))
+	err = db.Find(&booking, id)
+	if err != nil {
+		return nil, models.Error{500, "Data มีปัญหาไม่สามารถยกเลิกได้"}
+	}
+	_ = db.Destroy(&booking)
+	return &booking, nil
 }
