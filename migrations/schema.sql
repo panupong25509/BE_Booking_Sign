@@ -141,6 +141,7 @@ CREATE TABLE public.signs (
     location character varying(255) NOT NULL,
     limitdate integer NOT NULL,
     beforebooking integer NOT NULL,
+    picture character varying(255) NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
