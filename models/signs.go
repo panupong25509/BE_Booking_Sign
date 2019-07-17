@@ -79,6 +79,9 @@ func (s *Sign) CheckParamPostForm(data map[string]interface{}) bool {
 }
 
 func (s *Sign) CreateSignModel(data map[string]interface{}, namepic string) {
+	if data["id"] != nil {
+		s.ID, _ = strconv.Atoi(data["id"].(string))
+	}
 	s.Name = data["signname"].(string)
 	s.Location = data["location"].(string)
 	s.Limitdate, _ = strconv.Atoi(data["limitdate"].(string))

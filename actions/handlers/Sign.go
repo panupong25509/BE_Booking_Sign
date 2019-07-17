@@ -32,3 +32,11 @@ func DeleteSign(c buffalo.Context) error {
 	}
 	return c.Render(200, r.JSON(destroy))
 }
+func UpdateSign(c buffalo.Context) error {
+	res, err := repositories.UpdateSign(c)
+	if err != nil {
+		status := err.(models.Error)
+		return c.Render(status.Code, r.JSON(status))
+	}
+	return c.Render(200, r.JSON(res))
+}

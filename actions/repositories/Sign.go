@@ -40,24 +40,19 @@ func AddSign(c buffalo.Context) (interface{}, interface{}) {
 
 func UploadImg(c buffalo.Context, sign string) (interface{}, interface{}) {
 	f, err := c.File("file")
-	log.Print(sign)
 	tempFile, err := ioutil.TempFile(os.TempDir(), sign+`-*.jpg`)
 	defer tempFile.Close()
 
 	fileBytes, err := ioutil.ReadAll(f)
-
 	tempFile.Write(fileBytes)
 	in, err := os.Open(tempFile.Name())
 	defer in.Close()
 	_, file := filepath.Split(tempFile.Name())
-	log.Print(file)
 	out, err := os.Create(`D:\fe_booking_sign\public\img\` + file)
 	if _, err = io.Copy(out, in); err != nil {
 		log.Print(err)
 		return nil, models.Error{500, "can't add sign"}
 	}
-	log.Print("img")
-
 	return file, nil
 
 }
@@ -71,6 +66,9 @@ func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
 	err = db.All(&allSign.Signs)
 	if err != nil {
 		return nil, nil
+	}
+	if len(allSign.Signs) == 0 {
+		return nil, models.Error{400, "Not have sign"}
 	}
 	return &allSign, nil
 }
@@ -108,11 +106,36 @@ func DeleteSign(c buffalo.Context) (interface{}, interface{}) {
 	data := DynamicPostForm(c)
 	sign := models.Sign{}
 	id, _ := strconv.Atoi(data["id"].(string))
-	_ = db.Find(&sign, id)
-	if sign.ID == 0 {
-		return resSuccess("ไม่มีป้ายนี้ใน Database"), nil
+	err = db.Find(&sign, id)
+	if err != nil {
+		return nil, models.Error{500, "ไม่มี id นี้ใน Database"}
 	}
 	os.Remove(`D:\fe_booking_sign\public\img\` + sign.Picture)
 	_ = db.Destroy(&sign)
+	return resSuccess(nil), nil
+}
+
+func UpdateSign(c buffalo.Context) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	data := DynamicPostForm(c)
+	sign := models.Sign{}
+	if !sign.CheckParamPostForm(data) {
+		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
+	}
+	file, err := UploadImg(c, data["signname"].(string))
+	if err != nil {
+		return nil, err
+	}
+	sign.CreateSignModel(data, file.(string))
+	oldSign, err := GetSignById(c, sign.ID)
+	if err != nil {
+		return nil, err
+	}
+	oldPicture := oldSign.(models.Sign).Picture
+	os.Remove(`D:\fe_booking_sign\public\img\` + oldPicture)
+	db.Update(&sign)
 	return resSuccess(nil), nil
 }
