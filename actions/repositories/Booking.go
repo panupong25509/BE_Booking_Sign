@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"log"
 	"strconv"
 	"time"
 
@@ -26,6 +27,8 @@ func AddBooking(c buffalo.Context) (interface{}, interface{}) {
 	}
 	sign := signInterface.(*models.Sign)
 	newBooking.CreateBookingModel(data, code, *sign)
+	log.Print(newBooking)
+
 	if !ValidateBookingTime(&newBooking, db, *sign) {
 		return nil, models.Error{400, "วันที่เช่าไม่ว่าง"}
 	}
@@ -96,5 +99,5 @@ func DeleteBooking(c buffalo.Context) (interface{}, interface{}) {
 		return nil, models.Error{500, "Data มีปัญหาไม่สามารถยกเลิกได้"}
 	}
 	_ = db.Destroy(&booking)
-	return &booking, nil
+	return models.Error{200, "ยกเลิกสำเร็จ"}, nil
 }
