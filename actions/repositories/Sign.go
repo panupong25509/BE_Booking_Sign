@@ -94,7 +94,10 @@ func GetSignById(c buffalo.Context, id int) (interface{}, interface{}) {
 		return nil, err
 	}
 	sign := models.Sign{}
-	_ = db.Find(&sign, id)
+	err = db.Find(&sign, id)
+	if err != nil {
+		return nil, models.Error{400, "ไม่มีป้ายนี้ใน database"}
+	}
 	return sign, nil
 }
 
@@ -108,7 +111,7 @@ func DeleteSign(c buffalo.Context) (interface{}, interface{}) {
 	id, _ := strconv.Atoi(data["id"].(string))
 	err = db.Find(&sign, id)
 	if err != nil {
-		return nil, models.Error{500, "ไม่มี id นี้ใน Database"}
+		return nil, models.Error{400, "ไม่มีป้ายนี้ใน Database"}
 	}
 	os.Remove(`D:\fe_booking_sign\public\img\` + sign.Picture)
 	_ = db.Destroy(&sign)
