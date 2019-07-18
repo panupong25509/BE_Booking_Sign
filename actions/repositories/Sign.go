@@ -94,6 +94,14 @@ func GetSignById(c buffalo.Context, id int) (interface{}, interface{}) {
 		return nil, err
 	}
 	sign := models.Sign{}
+	if id == 0 {
+		data := DynamicPostForm(c)
+		err = db.Find(&sign, data["id"])
+		if err != nil {
+			return nil, models.Error{400, "ไม่มีป้ายนี้ใน database"}
+		}
+		return sign, nil
+	}
 	err = db.Find(&sign, id)
 	if err != nil {
 		return nil, models.Error{400, "ไม่มีป้ายนี้ใน database"}
