@@ -68,6 +68,7 @@ func App() *buffalo.App {
 		app.POST("/deletesign", handlers.DeleteSign)
 		app.POST("/updatesign", handlers.UpdateSign)
 		app.POST("/deletebooking", handlers.DeleteBooking)
+		app.GET("/getbookingdays/{id}", handlers.GetBookingDayBySign)
 	}
 
 	return app

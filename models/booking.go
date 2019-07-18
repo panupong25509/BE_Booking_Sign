@@ -21,6 +21,13 @@ type Booking struct {
 	UpdatedAt    time.Time `json:"-" db:"updated_at"`
 }
 
+type BookingDay struct {
+	Firstdate time.Time `json:"firstdate"`
+	Lastdate  time.Time `json:"lastdate"`
+}
+
+type BookingDays []BookingDay
+
 // String is not required by pop and may be deleted
 func (b Booking) String() string {
 	jb, _ := json.Marshal(b)
@@ -81,6 +88,16 @@ func (b *Booking) CreateBookingModel(data map[string]interface{}, code string, s
 	b.SignID = sign.ID
 	b.Sign = Sign{Name: sign.Name, Location: sign.Location, Limitdate: sign.Limitdate, Beforebooking: sign.Beforebooking}
 }
+
+// func (b *Bookings) CreateBookingDays() interface{} {
+// 	days := BookingDays{}
+// 	newBookings := b
+// 	for value, _ := range  {
+// 		log.Print(value)
+// 		// days = append(days, BookingDay{})
+// 	}
+// 	return days
+// }
 
 func (b *Booking) ReturnJsonID() IDbooking {
 	idbook := IDbooking{b.ID}
