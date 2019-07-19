@@ -42,8 +42,8 @@ func UpdateSign(c buffalo.Context) error {
 	return c.Render(200, r.JSON(res))
 }
 
-func GetSignByID(c buffalo.Context) error {
-	res, err := repositories.GetSignByID(c, 0)
+func GetSignById(c buffalo.Context) error {
+	res, err := repositories.GetSignById(c, 0)
 	if err != nil {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status))
