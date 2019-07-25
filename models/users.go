@@ -11,6 +11,8 @@ import (
 
 type User struct {
 	ID           uuid.UUID `json:"id" db:"id"`
+	Username     string    `json:"username" db:"username"`
+	Password     string    `json:"password" db:"password"`
 	Fname        string    `json:"fname" db:"fname"`
 	Lname        string    `json:"lname" db:"lname"`
 	Organization string    `json:"organization" db:"organization"`
