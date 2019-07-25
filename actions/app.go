@@ -61,6 +61,8 @@ func App() *buffalo.App {
 		app.Use(popmw.Transaction(models.DB))
 
 		app.GET("/", handlers.Hello)
+		app.POST("/adduser", handlers.AddUser)
+		app.POST("/user", handlers.GetUserById)
 		app.GET("/allsign", handlers.GetAllSign)
 		app.POST("/addsign", handlers.AddSign)
 		app.POST("/addbooking", handlers.AddBooking)

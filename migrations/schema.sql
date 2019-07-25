@@ -41,11 +41,11 @@ SET default_with_oids = false;
 CREATE TABLE public.bookings (
     id integer NOT NULL,
     booking_code character varying(255) NOT NULL,
-    applicant character varying(255) NOT NULL,
-    organization character varying(255) NOT NULL,
+    description character varying(255) NOT NULL,
     first_date timestamp without time zone NOT NULL,
     last_date timestamp without time zone NOT NULL,
     sign_id integer NOT NULL,
+    applicant_id integer NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -76,35 +76,6 @@ ALTER SEQUENCE public.bookings_id_seq OWNED BY public.bookings.id;
 
 
 --
--- Name: club_in_schools; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.club_in_schools (
-    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
-    club_id uuid NOT NULL,
-    school_id uuid NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
-);
-
-
-ALTER TABLE public.club_in_schools OWNER TO postgres;
-
---
--- Name: clubs; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.clubs (
-    id uuid NOT NULL,
-    name character varying(255) NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
-);
-
-
-ALTER TABLE public.clubs OWNER TO postgres;
-
---
 -- Name: schema_migration; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -114,22 +85,6 @@ CREATE TABLE public.schema_migration (
 
 
 ALTER TABLE public.schema_migration OWNER TO postgres;
-
---
--- Name: schools; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.schools (
-    id uuid NOT NULL,
-    name character varying(255) NOT NULL,
-    service character varying(255),
-    user_id uuid NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
-);
-
-
-ALTER TABLE public.schools OWNER TO postgres;
 
 --
 -- Name: signs; Type: TABLE; Schema: public; Owner: postgres
@@ -176,10 +131,10 @@ ALTER SEQUENCE public.signs_id_seq OWNED BY public.signs.id;
 --
 
 CREATE TABLE public.users (
-    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
-    first_name_th character varying(255) NOT NULL,
-    last_name_th character varying(255) NOT NULL,
-    age integer NOT NULL,
+    id uuid NOT NULL,
+    fname character varying(255) NOT NULL,
+    lname character varying(255) NOT NULL,
+    organization character varying(255) NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -210,27 +165,19 @@ ALTER TABLE ONLY public.bookings
 
 
 --
--- Name: clubs clubs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.clubs
-    ADD CONSTRAINT clubs_pkey PRIMARY KEY (id);
-
-
---
--- Name: schools schools_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.schools
-    ADD CONSTRAINT schools_pkey PRIMARY KEY (id);
-
-
---
 -- Name: signs signs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.signs
     ADD CONSTRAINT signs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
 --
