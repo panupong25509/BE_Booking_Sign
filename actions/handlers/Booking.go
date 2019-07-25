@@ -12,7 +12,7 @@ func AddBooking(c buffalo.Context) error {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status))
 	}
-	booking := newBooking.(*models.Booking)
+	booking := newBooking.(models.Booking)
 	return c.Render(200, r.JSON(booking.ReturnJsonID()))
 }
 

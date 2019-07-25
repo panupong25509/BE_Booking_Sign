@@ -45,7 +45,7 @@ CREATE TABLE public.bookings (
     first_date timestamp without time zone NOT NULL,
     last_date timestamp without time zone NOT NULL,
     sign_id integer NOT NULL,
-    applicant_id integer NOT NULL,
+    applicant_id uuid NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );

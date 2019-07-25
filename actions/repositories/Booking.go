@@ -11,42 +11,40 @@ import (
 )
 
 func AddBooking(c buffalo.Context) (interface{}, interface{}) {
-	db, errdb := ConnectDB(c)
-	if errdb != nil {
-		return nil, errdb
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
 	}
 	data := DynamicPostForm(c)
+	signID, _ := strconv.Atoi(data["sign_id"].(string))
+	sign, err := GetSignById(c, signID)
+	if err != nil {
+		return nil, err
+	}
+	code := GenCodeBooking(data, sign.(models.Sign))
 	newBooking := models.Booking{}
-	if !newBooking.CheckParamPostForm(data) {
-		return nil, models.Error{400, "param not complete"}
+	if !newBooking.CreateModel(data, code) {
+		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
-	code := GenCodeBooking(data)
-	signInterface, _ := GetSignByName(c)
-	if signInterface == nil {
-		return nil, models.Error{400, "don't have this sign in database"}
-	}
-	sign := signInterface.(*models.Sign)
-	newBooking.CreateBookingModel(data, code, *sign)
-	log.Print(newBooking)
-
-	if !ValidateBookingTime(&newBooking, db, *sign) {
+	if !ValidateBookingTime(newBooking, db, sign.(models.Sign)) {
 		return nil, models.Error{400, "วันที่เช่าไม่ว่าง"}
 	}
-	errdbcreate := db.Create(&newBooking)
-	if errdbcreate != nil {
+	err = db.Create(&newBooking)
+	if err != nil {
 		return nil, models.Error{500, "Can't Create to Database"}
 	}
-	return &newBooking, nil
+	return newBooking, nil
 }
 
-func GenCodeBooking(data map[string]interface{}) string {
-	code := data["signname"].(string) + "CODE" + data["firstdate"].(string) + data["lastdate"].(string)
+func GenCodeBooking(data map[string]interface{}, sign models.Sign) string {
+	code := sign.Name + "CODE" + data["first_date"].(string) + data["last_date"].(string)
 	return code
 }
 
-func ValidateBookingTime(newBooking *models.Booking, db *pop.Connection, sign models.Sign) bool {
+func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign models.Sign) bool {
 	bookings := models.Bookings{}
 	_ = db.Q().Where("last_date >= (?) and first_date <= (?) and sign_id = (?)", newBooking.FirstDate, newBooking.LastDate, newBooking.SignID).All(&bookings)
+	// log.Print(bookings)
 	if len(bookings) != 0 {
 		return false
 	}
