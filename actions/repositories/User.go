@@ -109,7 +109,7 @@ func CheckUsernamePassword(c buffalo.Context) (interface{}, interface{}) {
 	}
 	_ = db.Q().Where("username >= (?)", username).All(&user)
 	if CheckPasswordHash(password, user[0].Password) {
-		return &user, nil
+		return &user[0], nil
 	}
 	return nil, models.Error{400, "ผิดดดดดด"}
 }
