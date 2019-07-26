@@ -53,7 +53,21 @@ func (u *User) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
 }
 
-func (u *User) CreateModel(data map[string]interface{}) bool {
+func (u *User) CreateModel(data map[string]interface{}, password string) bool {
+	u.Username = data["username"].(string)
+	u.Password = password
+	u.Fname = data["fname"].(string)
+	u.Lname = data["lname"].(string)
+	u.Organization = data["organization"].(string)
+	return true
+}
+func (u *User) CheckParams(data map[string]interface{}) bool {
+	if data["username"] == nil {
+		return false
+	}
+	if data["password"] == nil {
+		return false
+	}
 	if data["fname"] == nil {
 		return false
 	}
@@ -63,8 +77,5 @@ func (u *User) CreateModel(data map[string]interface{}) bool {
 	if data["organization"] == nil {
 		return false
 	}
-	u.Fname = data["fname"].(string)
-	u.Lname = data["lname"].(string)
-	u.Organization = data["organization"].(string)
 	return true
 }

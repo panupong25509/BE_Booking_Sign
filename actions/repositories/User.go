@@ -3,26 +3,43 @@ package repositories
 import (
 	"log"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/JewlyTwin/be_booking_sign/models"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gofrs/uuid"
 )
 
-func AddUser(c buffalo.Context) (interface{}, interface{}) {
+func Register(c buffalo.Context) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
 	data := DynamicPostForm(c)
 	user := models.User{}
-	if !user.CreateModel(data) {
+	if !user.CheckParams(data) {
 		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
+	_, err = GetUserByUsername(c)
+	if err == nil {
+		log.Print(err)
+		return nil, models.Error{500, "Username นี้มีผู้ใช้แล้ว"}
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(data["password"].(string)), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	_ = user.CreateModel(data, string(hash))
 	err = db.Create(&user)
 	if err != nil {
 		return nil, err
 	}
 	return resSuccess(nil), nil
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func GetUserById(c buffalo.Context) (interface{}, interface{}) {
@@ -63,11 +80,11 @@ func GetUserByUsername(c buffalo.Context) (interface{}, interface{}) {
 		return nil, err
 	}
 	data := DynamicPostForm(c)
-	username := data["username"]
-	user := models.Users{}
-	if username == nil {
-		return nil, models.Error{400, "ไม่มีผู username"}
+	if data["username"] == nil {
+		return nil, models.Error{400, "ไม่มี username"}
 	}
+	username := data["username"].(string)
+	user := models.Users{}
 	_ = db.Q().Where("username >= (?)", username).All(&user)
 	if len(user) == 0 {
 		return nil, models.Error{400, "ไม่มี username"}
