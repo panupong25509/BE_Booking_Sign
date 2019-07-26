@@ -66,11 +66,33 @@ func GetUserByUsername(c buffalo.Context) (interface{}, interface{}) {
 	username := data["username"]
 	user := models.Users{}
 	if username == nil {
-		return nil, models.Error{400, "ไม่มีผู username"}
+		return nil, models.Error{400, "ไม่มี username"}
 	}
 	_ = db.Q().Where("username >= (?)", username).All(&user)
 	if len(user) == 0 {
 		return nil, models.Error{400, "ไม่มี username"}
 	}
 	return user[0], nil
+}
+
+func CheckUsernamePassword(c buffalo.Context) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	data := DynamicPostForm(c)
+	username := data["username"].(string)
+	password := data["password"].(string)
+	user := models.Users{}
+	if username == "" {
+		return nil, models.Error{400, "ไม่มี username"}
+	}
+	if password == "" {
+		return nil, models.Error{400, "ไม่มี password"}
+	}
+	_ = db.Q().Where("username >= (?)", username).All(&user)
+	if user[0].Password == password {
+		return nil, models.Error{300, "ถูกต้องงงงง"}
+	}
+	return nil, models.Error{400, "ผิดดดดดด"}
 }
