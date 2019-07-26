@@ -69,6 +69,15 @@ func GetAllBooking(c buffalo.Context) (interface{}, interface{}) {
 	}
 	bookings := models.Allbooking{}
 	for _, value := range allBooking.Booking {
+		user, err := GetUserByIduuid(c, value.ApplicantID)
+		// log.Print(user)
+		if err != nil {
+			return nil, err
+		}
+		value.Applicant = user.(models.User)
+		bookings.Booking = append(bookings.Booking, value)
+	}
+	for _, value := range allBooking.Booking {
 		sign, err := GetSignById(c, value.SignID)
 		if err != nil {
 			return nil, err
