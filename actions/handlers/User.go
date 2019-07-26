@@ -6,8 +6,8 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-func AddUser(c buffalo.Context) error {
-	success, err := repositories.AddUser(c)
+func Register(c buffalo.Context) error {
+	success, err := repositories.Register(c)
 	if err != nil {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status))
