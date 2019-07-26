@@ -67,7 +67,7 @@ func GetUserByIduuid(c buffalo.Context, id uuid.UUID) (interface{}, interface{})
 	}
 	user := models.User{}
 	err = db.Find(&user, id)
-	log.Print(user)
+	// log.Print(user)
 	if err != nil {
 		return nil, models.Error{400, "ไม่มีผู้ใช้นี้ใน"}
 	}

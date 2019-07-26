@@ -8,6 +8,7 @@ import (
 	"github.com/JewlyTwin/be_booking_sign/models"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
+	"github.com/gofrs/uuid"
 )
 
 func AddBooking(c buffalo.Context) (interface{}, interface{}) {
@@ -57,27 +58,29 @@ func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign mod
 	return true
 }
 
-func GetAllBooking(c buffalo.Context) (interface{}, interface{}) {
+func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
+	data := DynamicPostForm(c)
+	if data["applicant_id"] == nil {
+		return nil, models.Error{500, "ไม่มีข้อมูล User"}
+	}
 	allBooking := models.Allbooking{}
-	errselectall := db.All(&allBooking.Booking)
-	if errselectall != nil {
+	applicantID, _ := uuid.FromString(data["applicant_id"].(string))
+	err = db.Q().Where("applicant_id = (?)", applicantID).All(&allBooking.Booking)
+	if err != nil {
 		return nil, models.Error{500, "Can't Select data form Database"}
 	}
 	bookings := models.Allbooking{}
 	for _, value := range allBooking.Booking {
 		user, err := GetUserByIduuid(c, value.ApplicantID)
-		// log.Print(user)
+		log.Print(user)
 		if err != nil {
 			return nil, err
 		}
 		value.Applicant = user.(models.User)
-		bookings.Booking = append(bookings.Booking, value)
-	}
-	for _, value := range allBooking.Booking {
 		sign, err := GetSignById(c, value.SignID)
 		if err != nil {
 			return nil, err
