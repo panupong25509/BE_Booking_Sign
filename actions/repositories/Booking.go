@@ -96,7 +96,19 @@ func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 
 func CheckDate(D1 time.Time, D2 time.Time) int {
 	diff := D2.Sub(D1)
-	return int(diff.Hours()/24) + 1
+	allDay := int(diff.Hours()/24) + 1 //first-last
+	day := D1
+	sunday := 0
+	for day.Before(D2) {
+		if int(day.Weekday()) == 0 {
+			sunday = sunday + 1
+			day = day.AddDate(0, 0, 7)
+		} else {
+			day = day.AddDate(0, 0, 1)
+		}
+	}
+	weekday := sunday * 2 // weekday in firstdate - lastdate
+	return allDay - weekday
 }
 
 func DeleteBooking(c buffalo.Context) (interface{}, interface{}) {
@@ -123,14 +135,12 @@ func GetBookingDaysBySign(c buffalo.Context) (interface{}, interface{}) {
 	bookings := models.Bookings{}
 	bookingdate := time.Now().Format("2006-01-02")
 	signid, _ := strconv.Atoi(c.Param("id"))
-	log.Print("test")
 	err = db.Q().Where("( last_date >= (?) or first_date >= (?) ) and sign_id = (?)", bookingdate, bookingdate, signid).All(&bookings)
 	if err != nil {
 		return nil, models.Error{400, "DB"}
 	}
 	days := models.BookingDays{}
 	for _, value := range bookings {
-		log.Print(value)
 		days = append(days, models.BookingDay{value.FirstDate, value.LastDate})
 	}
 	return days, nil
