@@ -107,7 +107,7 @@ func CheckUsernamePassword(c buffalo.Context) (interface{}, interface{}) {
 	if password == "" {
 		return nil, models.Error{400, "ไม่มี password"}
 	}
-	_ = db.Q().Where("username >= (?)", username).All(&user)
+	_ = db.Q().Where("username = (?)", username).All(&user)
 	if CheckPasswordHash(password, user[0].Password) {
 		return &user[0], nil
 	}
