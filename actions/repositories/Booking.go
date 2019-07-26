@@ -27,7 +27,11 @@ func AddBooking(c buffalo.Context) (interface{}, interface{}) {
 	if !newBooking.CreateModel(data, code) {
 		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
-	if !ValidateBookingTime(newBooking, db, sign.(models.Sign)) {
+	validate, err := ValidateBookingTime(newBooking, db, sign.(models.Sign))
+	if err != nil {
+		return nil, err
+	}
+	if !validate {
 		return nil, models.Error{400, "วันที่เช่าไม่ว่าง"}
 	}
 	err = db.Create(&newBooking)
@@ -42,20 +46,19 @@ func GenCodeBooking(data map[string]interface{}, sign models.Sign) string {
 	return code
 }
 
-func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign models.Sign) bool {
+func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign models.Sign) (bool, interface{}) {
 	bookings := models.Bookings{}
 	_ = db.Q().Where("last_date >= (?) and first_date <= (?) and sign_id = (?)", newBooking.FirstDate, newBooking.LastDate, newBooking.SignID).All(&bookings)
-	// log.Print(bookings)
 	if len(bookings) != 0 {
-		return false
+		return false, models.Error{500, "วันที่เช่าไม่ว่าง"}
 	}
 	if CheckDate(newBooking.FirstDate, newBooking.LastDate) > sign.Limitdate {
-		return false
+		return false, models.Error{500, "กรุณาจองในระยะเวลา " + strconv.Itoa(sign.Limitdate) + " วัน"}
 	}
 	if CheckDate(time.Now(), newBooking.FirstDate) < sign.Beforebooking {
-		return false
+		return false, models.Error{500, "กรุณาจองก่อน " + strconv.Itoa(sign.Beforebooking) + " วัน"}
 	}
-	return true
+	return true, nil
 }
 
 func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
