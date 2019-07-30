@@ -20,9 +20,10 @@ func Register(c buffalo.Context) (interface{}, interface{}) {
 	if !user.CheckParams(data) {
 		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
-	_, err = GetUserByUsername(c)
+	username, err := GetUserByUsername(c)
+	log.Println(username)
 	if err == nil {
-		log.Print(err)
+		// log.Print(err)
 		return nil, models.Error{500, "Username นี้มีผู้ใช้แล้ว"}
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(data["password"].(string)), bcrypt.DefaultCost)
@@ -85,7 +86,7 @@ func GetUserByUsername(c buffalo.Context) (interface{}, interface{}) {
 	}
 	username := data["username"].(string)
 	user := models.Users{}
-	_ = db.Q().Where("username >= (?)", username).All(&user)
+	_ = db.Q().Where("username = (?)", username).All(&user)
 	if len(user) == 0 {
 		return nil, models.Error{400, "ไม่มี username"}
 	}
