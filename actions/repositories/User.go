@@ -125,7 +125,7 @@ func Login(c buffalo.Context) (interface{}, interface{}) {
 		jwt := EncodeJWT(user[0].ID, secret)
 		return jwt, nil
 	}
-	return nil, models.Error{400, "ผิดดดดดด"}
+	return nil, models.Error{400, "username or password incorrect"}
 }
 func BytesToString(b []byte) string {
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
