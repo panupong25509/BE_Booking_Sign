@@ -3,12 +3,13 @@ package repositories
 import (
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/JewlyTwin/be_booking_sign/models"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
-	"github.com/gofrs/uuid"
 )
 
 func AddBooking(c buffalo.Context) (interface{}, interface{}) {
@@ -62,17 +63,21 @@ func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign mod
 }
 
 func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
+	jwtReq := c.Request().Header.Get("Authorization")
+	log.Print(jwtReq)
+	jwtStrings := strings.Split(jwtReq, "Bearer ")
+	log.Print(jwtStrings[1])
+	token, _ := jwt.Parse(jwtStrings[1], func(token *jwt.Token) (interface{}, error) {
+		return []byte("bookingsign"), nil
+	})
+	tokens := token.Claims.(jwt.MapClaims)
+	log.Print(tokens["UserID"])
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	data := DynamicPostForm(c)
-	if data["applicant_id"] == nil {
-		return nil, models.Error{500, "ไม่มีข้อมูล User"}
-	}
 	allBooking := models.Allbooking{}
-	applicantID, _ := uuid.FromString(data["applicant_id"].(string))
-	err = db.Q().Where("applicant_id = (?)", applicantID).All(&allBooking.Booking)
+	err = db.Q().Where("applicant_id = (?)", tokens["UserID"]).All(&allBooking.Booking)
 	if err != nil {
 		return nil, models.Error{500, "Can't Select data form Database"}
 	}
@@ -91,6 +96,7 @@ func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 		value.Sign = sign.(models.Sign)
 		bookings.Booking = append(bookings.Booking, value)
 	}
+	log.Print(bookings)
 	return &bookings, nil
 }
 

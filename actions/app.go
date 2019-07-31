@@ -41,7 +41,7 @@ func App() *buffalo.App {
 			Env:          ENV,
 			SessionStore: sessions.Null{},
 			PreWares: []buffalo.PreWare{
-				cors.Default().Handler,
+				cors.AllowAll().Handler,
 			},
 			SessionName: "_practice_session",
 		})
@@ -62,11 +62,12 @@ func App() *buffalo.App {
 
 		app.GET("/", handlers.Hello)
 		app.POST("/register", handlers.Register)
+		app.POST("/check", handlers.CheckHash)
 		app.POST("/user", handlers.GetUserById)
 		app.GET("/allsign", handlers.GetAllSign)
 		app.POST("/addsign", handlers.AddSign)
 		app.POST("/addbooking", handlers.AddBooking)
-		app.POST("/booking", handlers.GetBookingByUser)
+		app.GET("/booking", handlers.GetBookingByUser)
 		app.POST("/deletesign", handlers.DeleteSign)
 		app.POST("/updatesign", handlers.UpdateSign)
 		app.POST("/getsign", handlers.GetSignById)
