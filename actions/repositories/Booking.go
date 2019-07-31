@@ -3,11 +3,9 @@ package repositories
 import (
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/JewlyTwin/be_booking_sign/models"
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
 )
@@ -64,14 +62,7 @@ func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign mod
 
 func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 	jwtReq := c.Request().Header.Get("Authorization")
-	log.Print(jwtReq)
-	jwtStrings := strings.Split(jwtReq, "Bearer ")
-	log.Print(jwtStrings[1])
-	token, _ := jwt.Parse(jwtStrings[1], func(token *jwt.Token) (interface{}, error) {
-		return []byte("bookingsign"), nil
-	})
-	tokens := token.Claims.(jwt.MapClaims)
-	log.Print(tokens["UserID"])
+	tokens, err := DecodeJWT(jwtReq, "bookingsign")
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
@@ -96,7 +87,6 @@ func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 		value.Sign = sign.(models.Sign)
 		bookings.Booking = append(bookings.Booking, value)
 	}
-	log.Print(bookings)
 	return &bookings, nil
 }
 
