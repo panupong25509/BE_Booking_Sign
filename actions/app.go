@@ -62,7 +62,7 @@ func App() *buffalo.App {
 
 		app.GET("/", handlers.Hello)
 		app.POST("/register", handlers.Register)
-		app.POST("/user", handlers.GetUserById)
+		app.GET("/user", handlers.GetUserById)
 		app.GET("/allsign", handlers.GetAllSign)
 		app.POST("/addsign", handlers.AddSign)
 		app.POST("/addbooking", handlers.AddBooking)

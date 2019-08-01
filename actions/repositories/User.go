@@ -51,17 +51,17 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func GetUserById(c buffalo.Context) (interface{}, interface{}) {
+	jwtReq := c.Request().Header.Get("Authorization")
+	tokens, err := DecodeJWT(jwtReq, "bookingsign")
+	if err != nil {
+		return nil, err
+	}
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	data := DynamicPostForm(c)
-	id, err := uuid.FromString(data["id"].(string))
-	if err != nil {
-		return nil, err
-	}
 	user := models.User{}
-	err = db.Find(&user, id)
+	err = db.Find(&user, tokens["UserID"])
 	if err != nil {
 		return nil, models.Error{400, "ไม่มีผู้ใช้นี้ใน database"}
 	}
