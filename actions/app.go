@@ -75,6 +75,7 @@ func App() *buffalo.App {
 		app.POST("/login", handlers.Login)
 
 		app.GET("/admin/booking", handlers.GetBookingForAdmin)
+		app.POST("/admin/booking/approve", handlers.ApproveBooking)
 	}
 
 	return app

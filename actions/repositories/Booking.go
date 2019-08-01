@@ -1,12 +1,13 @@
 package repositories
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"time"
 
-	"gopkg.in/gomail.v2"
+	"github.com/JewlyTwin/be_booking_sign/mailers"
+
+	// "gopkg.in/gomail.v2"
 
 	"github.com/JewlyTwin/be_booking_sign/models"
 	"github.com/gobuffalo/buffalo"
@@ -39,46 +40,27 @@ func AddBooking(c buffalo.Context, data map[string]interface{}) (interface{}, in
 	if err != nil {
 		return nil, models.Error{500, "Can't Create to Database"}
 	}
-	send2()
 	return newBooking, nil
 }
 
-// func send(body string) {
-// 	log.Print("_________________________________________________________________________________________________________-_________________________________________________________________________________________________________-_________________________________________________________________________________________________________-_________________________________________________________________________________________________________-_________________________________________________________________________________________________________-_________________________________________________________________________________________________________-_________________________________________________________________________________________________________-")
-// 	emailsender := "l2jew123@gmail.com"
-// 	pass := "JewlyTwin123"
-// 	emailreceiver := "panupong.jkn@gmail.com"
-
-// 	msg := "From: " + emailsender + "\n" +
-// 		"To: " + emailreceiver + "\n" +
-// 		"Subject: Hello there\n\n" +
-// 		body
-
-// 	emailAuth := smtp.PlainAuth("", emailsender, pass, "smtp.gmail.com")
-
-// 	err := smtp.SendMail("smtp.gmail.com:587",
-// 		emailAuth,
-// 		emailsender, []string{emailreceiver}, []byte(msg))
-
-// 	if err != nil {
-// 		log.Printf("smtp error: %s", err)
-// 		return
-// 	}
-
-// 	log.Print("sent, Success")
-// }
-
-func send2() {
-	mail := gomail.NewMessage()
-	mail.SetHeader("From", "l2jew123@gmail.com")
-	mail.SetHeader("To", "panupong.jkn@gmail.com")
-	mail.SetHeader("Subject", "SADDDDDDDDDDDDDD")
-	mail.SetBody("test/plain", "How are you")
-	dialer := gomail.NewPlainDialer("smtp.gmail.com", 587, "l2jew123@gmail.com", "JewlyTwin123")
-	if err := dialer.DialAndSend(mail); err != nil {
-		panic(err)
+func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
 	}
-	fmt.Print("Email Sent")
+	id, _ := strconv.Atoi(data["id"].(string))
+	booking := models.Booking{}
+	err = db.Find(&booking, id)
+	if err != nil {
+		return nil, err
+	}
+	booking.Status = "approve"
+	err = db.Update(&booking)
+	if err != nil {
+		return nil, err
+	}
+	mailers.SendWelcomeEmails()
+	return resSuccess("Approve success"), nil
 }
 
 func GenCodeBooking(data map[string]interface{}, sign models.Sign) string {

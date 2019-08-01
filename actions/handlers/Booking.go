@@ -17,6 +17,16 @@ func AddBooking(c buffalo.Context) error {
 	return c.Render(200, r.JSON(booking.ReturnJsonID()))
 }
 
+func ApproveBooking(c buffalo.Context) error {
+	data := DynamicPostForm(c)
+	message, err := repositories.ApproveBooking(c, data)
+	if err != nil {
+		status := err.(models.Error)
+		return c.Render(status.Code, r.JSON(status))
+	}
+	return c.Render(200, r.JSON(message))
+}
+
 func GetBookingByUser(c buffalo.Context) error {
 	allBooking, err := repositories.GetBookingByUser(c)
 	if err != nil {
