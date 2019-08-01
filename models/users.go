@@ -61,6 +61,8 @@ func (u *User) CreateModel(data map[string]interface{}, password string) bool {
 	u.Fname = data["fname"].(string)
 	u.Lname = data["lname"].(string)
 	u.Organization = data["organization"].(string)
+	u.Email = data["email"].(string)
+	u.Role = data["role"].(string)
 	return true
 }
 func (u *User) CheckParams(data map[string]interface{}) bool {

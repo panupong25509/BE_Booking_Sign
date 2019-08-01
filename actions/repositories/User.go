@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"encoding/base64"
-	"log"
 	"reflect"
 	"unsafe"
 
@@ -27,10 +26,8 @@ func Register(c buffalo.Context) (interface{}, interface{}) {
 	if !user.CheckParams(data) {
 		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
-	username, err := GetUserByUsername(c)
-	log.Println(username)
+	_, err = GetUserByUsername(c)
 	if err == nil {
-		// log.Print(err)
 		return nil, models.Error{500, "Username นี้มีผู้ใช้แล้ว"}
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(data["password"].(string)), bcrypt.DefaultCost)
