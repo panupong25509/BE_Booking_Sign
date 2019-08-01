@@ -6,6 +6,8 @@ create_table("bookings") {
 	t.Column("last_date", "timestamp", {})
 	t.Column("sign_id", "integer", {})
 	t.Column("applicant_id", "uuid", {})
+	t.Column("status", "string", {})
+	t.Column("comment", "string", {})
 	t.Foreignkey("sign_id", {"signs":"id"}, {})
 	t.Foreignkey("applicant_id", {"users":"id"}, {})
 	t.Index("booking_code", {"unique": true})
