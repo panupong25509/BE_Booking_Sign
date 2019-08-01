@@ -24,14 +24,14 @@ func AddBooking(c buffalo.Context) (interface{}, interface{}) {
 	code := GenCodeBooking(data, sign.(models.Sign))
 	newBooking := models.Booking{}
 	if !newBooking.CreateModel(data, code) {
-		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
+		return nil, models.Error{400, "Please complete all fields"}
 	}
 	validate, err := ValidateBookingTime(newBooking, db, sign.(models.Sign))
 	if err != nil {
 		return nil, err
 	}
 	if !validate {
-		return nil, models.Error{400, "วันที่เช่าไม่ว่าง"}
+		return nil, models.Error{400, "Busy date"}
 	}
 	err = db.Create(&newBooking)
 	if err != nil {
@@ -49,13 +49,13 @@ func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign mod
 	bookings := models.Bookings{}
 	_ = db.Q().Where("last_date >= (?) and first_date <= (?) and sign_id = (?)", newBooking.FirstDate, newBooking.LastDate, newBooking.SignID).All(&bookings)
 	if len(bookings) != 0 {
-		return false, models.Error{500, "วันที่เช่าไม่ว่าง"}
+		return false, models.Error{500, "Busy date"}
 	}
 	if CheckDate(newBooking.FirstDate, newBooking.LastDate) > sign.Limitdate {
-		return false, models.Error{500, "กรุณาจองในระยะเวลา " + strconv.Itoa(sign.Limitdate) + " วัน"}
+		return false, models.Error{500, "Please book within " + strconv.Itoa(sign.Limitdate) + " days"}
 	}
 	if CheckDate(time.Now(), newBooking.FirstDate) < sign.Beforebooking {
-		return false, models.Error{500, "กรุณาจองก่อน " + strconv.Itoa(sign.Beforebooking) + " วัน"}
+		return false, models.Error{500, "Please book before " + strconv.Itoa(sign.Beforebooking) + " days"}
 	}
 	return true, nil
 }
@@ -120,7 +120,7 @@ func DeleteBooking(c buffalo.Context) (interface{}, interface{}) {
 		return nil, models.Error{500, "Data มีปัญหาไม่สามารถยกเลิกได้"}
 	}
 	_ = db.Destroy(&booking)
-	return models.Error{200, "ยกเลิกสำเร็จ"}, nil
+	return models.Error{200, "Delete success"}, nil
 }
 
 func GetBookingDaysBySign(c buffalo.Context) (interface{}, interface{}) {
