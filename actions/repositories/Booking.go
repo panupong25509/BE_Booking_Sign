@@ -89,6 +89,45 @@ func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 	}
 	return &bookings, nil
 }
+func GetBookingForAdmin(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+	jwtReq, err := GetJWT(c)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	allBooking := models.Allbooking{}
+	if tokens["Role"] != "admin" {
+		return nil, models.Error{500, "You not Admin"}
+	}
+	err = db.Q().Where("status = (?)", "pending").All(&allBooking.Booking)
+	if err != nil {
+		return nil, models.Error{500, "Can't Select data form Database"}
+	}
+	bookings := models.Allbooking{}
+	for _, value := range allBooking.Booking {
+		user, err := GetUserByIduuid(c, value.ApplicantID)
+		log.Print(user)
+		if err != nil {
+			return nil, err
+		}
+		value.Applicant = user.(models.User)
+		sign, err := GetSignById(c, value.SignID)
+		if err != nil {
+			return nil, err
+		}
+		value.Sign = sign.(models.Sign)
+		bookings.Booking = append(bookings.Booking, value)
+	}
+	return bookings, nil
+}
 
 func CheckDate(D1 time.Time, D2 time.Time) int {
 	diff := D2.Sub(D1)
