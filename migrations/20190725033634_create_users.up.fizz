@@ -5,5 +5,7 @@ create_table("users") {
 	t.Column("username", "string", {"unique": true})
 	t.Column("password", "string", {})
 	t.Column("organization", "string", {})
+	t.Column("email", "string", {})
+	t.Column("role", "string", {})
 	t.Timestamps()
 }

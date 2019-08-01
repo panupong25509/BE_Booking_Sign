@@ -16,6 +16,8 @@ type User struct {
 	Fname        string    `json:"fname" db:"fname"`
 	Lname        string    `json:"lname" db:"lname"`
 	Organization string    `json:"organization" db:"organization"`
+	Email        string    `json:"email" db:"email"`
+	Role         string    `json:"role" db:"role"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
@@ -75,6 +77,12 @@ func (u *User) CheckParams(data map[string]interface{}) bool {
 		return false
 	}
 	if data["organization"] == nil {
+		return false
+	}
+	if data["email"] == nil {
+		return false
+	}
+	if data["role"] == nil {
 		return false
 	}
 	return true
