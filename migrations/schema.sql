@@ -46,6 +46,8 @@ CREATE TABLE public.bookings (
     last_date timestamp without time zone NOT NULL,
     sign_id integer NOT NULL,
     applicant_id uuid NOT NULL,
+    status character varying(255) NOT NULL,
+    comment character varying(255) NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -137,6 +139,8 @@ CREATE TABLE public.users (
     username character varying(255) NOT NULL,
     password character varying(255) NOT NULL,
     organization character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
+    role character varying(255) NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
