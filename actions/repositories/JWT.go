@@ -11,6 +11,7 @@ import (
 
 type Token struct {
 	UserID uuid.UUID
+	Role   string
 	jwt.StandardClaims
 }
 
@@ -26,8 +27,8 @@ func DecodeJWT(jwtReq string, key string) (jwt.MapClaims, interface{}) {
 	return tokens, nil
 }
 
-func EncodeJWT(userID uuid.UUID, secret string) string {
-	tokenJWT := Token{UserID: userID}
+func EncodeJWT(user models.User, secret string) string {
+	tokenJWT := Token{UserID: user.ID, Role: user.Role}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tokenJWT)
 	jwt, err := token.SignedString([]byte(secret))
 	if err != nil {
