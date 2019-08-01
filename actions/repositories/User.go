@@ -119,7 +119,7 @@ func Login(c buffalo.Context) (interface{}, interface{}) {
 	_ = db.Q().Where("username = (?)", username).All(&user)
 	if CheckPasswordHash(BytesToString(hashBytes), user[0].Password) {
 		var secret = "bookingsign"
-		jwt := EncodeJWT(user[0].ID, secret)
+		jwt := EncodeJWT(user[0], secret)
 		return jwt, nil
 	}
 	return nil, models.Error{400, "username or password incorrect"}
