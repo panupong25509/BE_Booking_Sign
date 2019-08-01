@@ -88,6 +88,8 @@ func (b *Booking) CreateModel(data map[string]interface{}, code string) bool {
 	b.Description = data["description"].(string)
 	b.FirstDate, _ = time.Parse("2006-01-02", data["first_date"].(string))
 	b.LastDate, _ = time.Parse("2006-01-02", data["last_date"].(string))
+	b.Status = "pending"
+	b.Comment = ""
 	return true
 }
 

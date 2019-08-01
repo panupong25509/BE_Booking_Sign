@@ -10,12 +10,11 @@ import (
 	"github.com/gobuffalo/pop"
 )
 
-func AddBooking(c buffalo.Context) (interface{}, interface{}) {
+func AddBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	data := DynamicPostForm(c)
 	signID, _ := strconv.Atoi(data["sign_id"].(string))
 	sign, err := GetSignById(c, signID)
 	if err != nil {
