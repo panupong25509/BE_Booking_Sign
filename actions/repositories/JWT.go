@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/gobuffalo/buffalo"
+
 	"github.com/JewlyTwin/be_booking_sign/models"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
@@ -15,6 +17,13 @@ type Token struct {
 	jwt.StandardClaims
 }
 
+func GetJWT(c buffalo.Context) (interface{}, interface{}) {
+	jwtReq := c.Request().Header.Get("Authorization")
+	if jwtReq == "" {
+		return nil, models.Error{400, "Not have jwt"}
+	}
+	return jwtReq, nil
+}
 func DecodeJWT(jwtReq string, key string) (jwt.MapClaims, interface{}) {
 	jwtStrings := strings.Split(jwtReq, "Bearer ")
 	token, err := jwt.Parse(jwtStrings[1], func(token *jwt.Token) (interface{}, error) {
