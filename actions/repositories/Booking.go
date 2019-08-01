@@ -4,6 +4,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/JewlyTwin/be_booking_sign/mailers"
+
+	// "gopkg.in/gomail.v2"
+
 	"github.com/JewlyTwin/be_booking_sign/models"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
@@ -36,6 +40,44 @@ func AddBooking(c buffalo.Context, data map[string]interface{}) (interface{}, in
 		return nil, models.Error{500, "Can't Create to Database"}
 	}
 	return newBooking, nil
+}
+
+func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+	jwtReq, err := GetJWT(c)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	if tokens["Role"] != "admin" {
+		return nil, models.Error{500, "You not Admin"}
+	}
+	id, _ := strconv.Atoi(data["id"].(string))
+	booking := models.Booking{}
+	err = db.Find(&booking, id)
+	if err != nil {
+		return nil, err
+	}
+	if booking.Status == "approve" {
+		return nil, models.Error{500, "This booking approved"}
+	}
+	if booking.Status == "reject" {
+		return nil, models.Error{500, "This booking rejected"}
+	}
+	booking.Status = "approve"
+	err = db.Update(&booking)
+	if err != nil {
+		return nil, err
+	}
+	mailers.SendWelcomeEmails()
+	return resSuccess("Approve success"), nil
 }
 
 func GenCodeBooking(data map[string]interface{}, sign models.Sign) string {
