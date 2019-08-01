@@ -89,7 +89,7 @@ func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 	}
 	return &bookings, nil
 }
-func GetBookingForAdmin(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+func GetBookingForAdmin(c buffalo.Context) (interface{}, interface{}) {
 	jwtReq, err := GetJWT(c)
 	if err != nil {
 		return nil, err
