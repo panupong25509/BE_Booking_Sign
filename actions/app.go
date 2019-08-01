@@ -73,6 +73,8 @@ func App() *buffalo.App {
 		app.POST("/deletebooking", handlers.DeleteBooking)
 		app.GET("/getbookingdays/{id}", handlers.GetBookingDayBySign)
 		app.POST("/login", handlers.Login)
+
+		app.GET("/admin/booking", handlers.GetBookingForAdmin)
 	}
 
 	return app

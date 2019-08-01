@@ -7,7 +7,8 @@ import (
 )
 
 func AddBooking(c buffalo.Context) error {
-	newBooking, err := repositories.AddBooking(c)
+	data := DynamicPostForm(c)
+	newBooking, err := repositories.AddBooking(c, data)
 	if err != nil {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status))
@@ -18,6 +19,14 @@ func AddBooking(c buffalo.Context) error {
 
 func GetBookingByUser(c buffalo.Context) error {
 	allBooking, err := repositories.GetBookingByUser(c)
+	if err != nil {
+		status := err.(models.Error)
+		return c.Render(status.Code, r.JSON(status))
+	}
+	return c.Render(200, r.JSON(allBooking))
+}
+func GetBookingForAdmin(c buffalo.Context) error {
+	allBooking, err := repositories.GetBookingForAdmin(c)
 	if err != nil {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status))
