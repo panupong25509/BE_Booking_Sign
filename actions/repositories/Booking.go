@@ -77,6 +77,24 @@ func CheckDate(D1 time.Time, D2 time.Time) int {
 	weekday := sunday * 2 // weekday in firstdate - lastdate
 	return allDay - weekday
 }
+func GetBookingDaysBySign(c buffalo.Context) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, models.Error{500, "Can't connect Database"}
+	}
+	bookings := models.Bookings{}
+	bookingdate := time.Now().Format("2006-01-02")
+	signid, _ := strconv.Atoi(c.Param("id"))
+	err = db.Q().Where("( last_date >= (?) or first_date >= (?) ) and sign_id = (?)", bookingdate, bookingdate, signid).All(&bookings)
+	if err != nil {
+		return nil, models.Error{400, "DB"}
+	}
+	days := models.BookingDays{}
+	for _, value := range bookings {
+		days = append(days, models.BookingDay{value.FirstDate, value.LastDate})
+	}
+	return days, nil
+}
 
 func RejectBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
 	jwtReq, err := GetJWT(c)
