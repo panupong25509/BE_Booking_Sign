@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"log"
 	"strconv"
 	"time"
 
@@ -116,7 +115,6 @@ func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 	bookings := models.Allbooking{}
 	for _, value := range allBooking.Booking {
 		user, err := GetUserByIduuid(c, value.ApplicantID)
-		log.Print(user)
 		if err != nil {
 			return nil, err
 		}
@@ -130,6 +128,7 @@ func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
 	}
 	return &bookings, nil
 }
+
 func GetBookingForAdmin(c buffalo.Context) (interface{}, interface{}) {
 	jwtReq, err := GetJWT(c)
 	if err != nil {
@@ -148,14 +147,13 @@ func GetBookingForAdmin(c buffalo.Context) (interface{}, interface{}) {
 	if tokens["Role"] != "admin" {
 		return nil, models.Error{500, "You not Admin"}
 	}
-	err = db.Q().Where("status = (?)", "pending").All(&allBooking.Booking)
+	err = db.Q().Where("status = 'pending'").All(&allBooking.Booking)
 	if err != nil {
 		return nil, models.Error{500, "Can't Select data form Database"}
 	}
 	bookings := models.Allbooking{}
 	for _, value := range allBooking.Booking {
 		user, err := GetUserByIduuid(c, value.ApplicantID)
-		log.Print(user)
 		if err != nil {
 			return nil, err
 		}
@@ -168,6 +166,43 @@ func GetBookingForAdmin(c buffalo.Context) (interface{}, interface{}) {
 		bookings.Booking = append(bookings.Booking, value)
 	}
 	return bookings, nil
+}
+
+func RejectBooking(c buffalo.Context) (interface{}, interface{}) {
+	jwtReq, err := GetJWT(c)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
+	if err != nil {
+		return nil, err
+	}
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	if tokens["Role"] != "admin" {
+		return nil, models.Error{500, "You not Admin"}
+	}
+
+	data := DynamicPostForm(c)
+	idbooking, _ := strconv.Atoi(data["id"].(string))
+	comment := data["comment"].(string)
+	booking := models.Booking{}
+	err = db.Find(&booking, idbooking)
+	if err != nil {
+		return nil, models.Error{500, "Can't Select data form Database"}
+	}
+	if booking.Status == "reject" {
+		return nil, models.Error{500, "This booking id is status reject"}
+	}
+	if booking.Status == "approve" {
+		return nil, models.Error{500, "This booking id is status approve"}
+	}
+	booking.Comment = comment
+	booking.Status = "reject"
+	db.Update(&booking)
+	return resSuccess("Success"), nil
 }
 
 func CheckDate(D1 time.Time, D2 time.Time) int {

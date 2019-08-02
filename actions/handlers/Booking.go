@@ -61,3 +61,12 @@ func GetBookingDayBySign(c buffalo.Context) error {
 	}
 	return c.Render(200, r.JSON(days))
 }
+
+func RejectBooking(c buffalo.Context) error {
+	days, err := repositories.RejectBooking(c)
+	if err != nil {
+		status := err.(models.Error)
+		return c.Render(status.Code, r.JSON(status))
+	}
+	return c.Render(200, r.JSON(days))
+}
