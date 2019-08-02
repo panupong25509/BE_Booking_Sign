@@ -72,11 +72,13 @@ func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}
 		return nil, models.Error{500, "This booking rejected"}
 	}
 	booking.Status = "approve"
+	userInterface, err := GetUserByIduuid(c, booking.ApplicantID)
+	user, err := userInterface.(models.User)
 	err = db.Update(&booking)
 	if err != nil {
 		return nil, err
 	}
-	mailers.SendWelcomeEmails()
+	mailers.SendWelcomeEmails("Your booking approved", user.Email)
 	return resSuccess("Approve success"), nil
 }
 
