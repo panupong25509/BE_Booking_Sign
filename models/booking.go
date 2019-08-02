@@ -31,6 +31,12 @@ type BookingDay struct {
 	Lastdate  time.Time `json:"lastdate"`
 }
 
+type Page struct {
+	NumberPage int
+	Bookings   []Booking
+	TotalPage  int
+}
+
 type BookingDays []BookingDay
 
 // String is not required by pop and may be deleted

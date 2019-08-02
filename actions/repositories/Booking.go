@@ -62,74 +62,6 @@ func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign mod
 	return true, nil
 }
 
-func GetBookingByUser(c buffalo.Context) (interface{}, interface{}) {
-	jwtReq := c.Request().Header.Get("Authorization")
-	tokens, err := DecodeJWT(jwtReq, "bookingsign")
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, err
-	}
-	allBooking := models.Allbooking{}
-	err = db.Q().Where("applicant_id = (?)", tokens["UserID"]).All(&allBooking.Booking)
-	if err != nil {
-		return nil, models.Error{500, "Can't Select data form Database"}
-	}
-	bookings := models.Allbooking{}
-	for _, value := range allBooking.Booking {
-		user, err := GetUserByIduuid(c, value.ApplicantID)
-		if err != nil {
-			return nil, err
-		}
-		value.Applicant = user.(models.User)
-		sign, err := GetSignById(c, value.SignID)
-		if err != nil {
-			return nil, err
-		}
-		value.Sign = sign.(models.Sign)
-		bookings.Booking = append(bookings.Booking, value)
-	}
-	return &bookings, nil
-}
-
-func GetBookingForAdmin(c buffalo.Context) (interface{}, interface{}) {
-	jwtReq, err := GetJWT(c)
-	if err != nil {
-		return nil, err
-	}
-	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, err
-	}
-	allBooking := models.Allbooking{}
-	if tokens["Role"] != "admin" {
-		return nil, models.Error{500, "You not Admin"}
-	}
-	err = db.Q().Where("status = 'pending'").All(&allBooking.Booking)
-	if err != nil {
-		return nil, models.Error{500, "Can't Select data form Database"}
-	}
-	bookings := models.Allbooking{}
-	for _, value := range allBooking.Booking {
-		user, err := GetUserByIduuid(c, value.ApplicantID)
-		if err != nil {
-			return nil, err
-		}
-		value.Applicant = user.(models.User)
-		sign, err := GetSignById(c, value.SignID)
-		if err != nil {
-			return nil, err
-		}
-		value.Sign = sign.(models.Sign)
-		bookings.Booking = append(bookings.Booking, value)
-	}
-	return bookings, nil
-}
-
 func RejectBooking(c buffalo.Context) (interface{}, interface{}) {
 	jwtReq, err := GetJWT(c)
 	if err != nil {
@@ -260,4 +192,81 @@ func GetBookingDaysBySign(c buffalo.Context) (interface{}, interface{}) {
 		days = append(days, models.BookingDay{value.FirstDate, value.LastDate})
 	}
 	return days, nil
+}
+
+func GetPaginateAdmin(page string, c buffalo.Context) (interface{}, interface{}) {
+	jwtReq, err := GetJWT(c)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	if tokens["Role"] != "admin" {
+		return nil, models.Error{500, "You not Admin"}
+	}
+
+	numberPage, _ := strconv.Atoi(page)
+	q := db.Paginate(numberPage, 10)
+	booking := []models.Booking{}
+	err = q.Where("status = 'pending'").All(&booking)
+
+	bookings := []models.Booking{}
+	for _, value := range booking {
+		user, err := GetUserByIduuid(c, value.ApplicantID)
+		if err != nil {
+			return nil, err
+		}
+		value.Applicant = user.(models.User)
+		sign, err := GetSignById(c, value.SignID)
+		if err != nil {
+			return nil, err
+		}
+		value.Sign = sign.(models.Sign)
+		bookings = append(bookings, value)
+	}
+	bookingJson := models.Page{numberPage, bookings, q.Paginator.TotalPages}
+	return &bookingJson, nil
+}
+
+func GetPaginateUser(page string, c buffalo.Context) (interface{}, interface{}) {
+	jwtReq, err := GetJWT(c)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
+	if err != nil {
+		return nil, err
+	}
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	numberPage, _ := strconv.Atoi(page)
+	q := db.Paginate(numberPage, 10)
+	booking := []models.Booking{}
+	err = q.Where("applicant_id = (?)", tokens["UserID"]).Order("first_date asc").All(&booking)
+	bookings := []models.Booking{}
+	for _, value := range booking {
+		user, err := GetUserByIduuid(c, value.ApplicantID)
+		if err != nil {
+			return nil, err
+		}
+		value.Applicant = user.(models.User)
+		sign, err := GetSignById(c, value.SignID)
+		if err != nil {
+			return nil, err
+		}
+		value.Sign = sign.(models.Sign)
+		bookings = append(bookings, value)
+	}
+	bookingJson := models.Page{numberPage, bookings, q.Paginator.TotalPages}
+	return &bookingJson, nil
+
 }

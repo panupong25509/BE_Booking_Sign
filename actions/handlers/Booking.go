@@ -27,23 +27,6 @@ func ApproveBooking(c buffalo.Context) error {
 	return c.Render(200, r.JSON(message))
 }
 
-func GetBookingByUser(c buffalo.Context) error {
-	allBooking, err := repositories.GetBookingByUser(c)
-	if err != nil {
-		status := err.(models.Error)
-		return c.Render(status.Code, r.JSON(status))
-	}
-	return c.Render(200, r.JSON(allBooking))
-}
-func GetBookingForAdmin(c buffalo.Context) error {
-	allBooking, err := repositories.GetBookingForAdmin(c)
-	if err != nil {
-		status := err.(models.Error)
-		return c.Render(status.Code, r.JSON(status))
-	}
-	return c.Render(200, r.JSON(allBooking))
-}
-
 func DeleteBooking(c buffalo.Context) error {
 	deleteBooking, err := repositories.DeleteBooking(c)
 	if err != nil {
@@ -63,10 +46,30 @@ func GetBookingDayBySign(c buffalo.Context) error {
 }
 
 func RejectBooking(c buffalo.Context) error {
-	days, err := repositories.RejectBooking(c)
+	message, err := repositories.RejectBooking(c)
 	if err != nil {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status))
 	}
-	return c.Render(200, r.JSON(days))
+	return c.Render(200, r.JSON(message))
+}
+
+func GetPaginateAdmin(c buffalo.Context) error {
+	page := c.Param("page")
+	booking, err := repositories.GetPaginateAdmin(page, c)
+	if err != nil {
+		status := err.(models.Error)
+		return c.Render(status.Code, r.JSON(status))
+	}
+	return c.Render(200, r.JSON(booking))
+}
+
+func GetPaginateUser(c buffalo.Context) error {
+	page := c.Param("page")
+	allBooking, err := repositories.GetPaginateUser(page, c)
+	if err != nil {
+		status := err.(models.Error)
+		return c.Render(status.Code, r.JSON(status))
+	}
+	return c.Render(200, r.JSON(allBooking))
 }
