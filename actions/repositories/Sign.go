@@ -12,17 +12,31 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-func AddSign(c buffalo.Context) (interface{}, interface{}) {
+func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	data := DynamicPostForm(c)
+	allSign := models.AllSign{}
+	err = db.All(&allSign.Signs)
+	if err != nil {
+		return nil, nil
+	}
+	if len(allSign.Signs) == 0 {
+		return nil, models.Error{400, "Not have sign"}
+	}
+	return &allSign, nil
+}
+func AddSign(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
 	sign := models.Sign{}
 	if !sign.CheckParamPostForm(data) {
 		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
-	samename, err := GetSignByName(c)
+	samename, err := GetSignByName(c, data)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +49,7 @@ func AddSign(c buffalo.Context) (interface{}, interface{}) {
 	}
 	sign.CreateSignModel(data, file.(string))
 	db.Create(&sign)
-	return resSuccess(nil), nil
+	return Success(nil), nil
 }
 
 func UploadImg(c buffalo.Context, sign string) (interface{}, interface{}) {
@@ -57,30 +71,12 @@ func UploadImg(c buffalo.Context, sign string) (interface{}, interface{}) {
 
 }
 
-func GetAllSign(c buffalo.Context) (interface{}, interface{}) {
+func GetSignByName(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	allSign := models.AllSign{}
-	err = db.All(&allSign.Signs)
-	if err != nil {
-		return nil, nil
-	}
-	if len(allSign.Signs) == 0 {
-		return nil, models.Error{400, "Not have sign"}
-	}
-	return &allSign, nil
-}
-
-func GetSignByName(c buffalo.Context) (interface{}, interface{}) {
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, err
-	}
-	data := DynamicPostForm(c)
 	sign := []models.Sign{}
-	log.Print(data["signname"].(string))
 	_ = db.Where("sign_name in (?)", data["signname"].(string)).All(&sign)
 	if len(sign) != 0 {
 		return &sign[0], nil
@@ -95,8 +91,8 @@ func GetSignById(c buffalo.Context, id int) (interface{}, interface{}) {
 	}
 	sign := models.Sign{}
 	if id == 0 {
-		data := DynamicPostForm(c)
-		err = db.Find(&sign, data["id"])
+		signid, _ := strconv.Atoi(c.Param("id"))
+		err = db.Find(&sign, signid)
 		if err != nil {
 			return nil, models.Error{400, "ไม่มีป้ายนี้ใน database"}
 		}
@@ -109,12 +105,11 @@ func GetSignById(c buffalo.Context, id int) (interface{}, interface{}) {
 	return sign, nil
 }
 
-func DeleteSign(c buffalo.Context) (interface{}, interface{}) {
+func DeleteSign(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	data := DynamicPostForm(c)
 	sign := models.Sign{}
 	id, _ := strconv.Atoi(data["id"].(string))
 	err = db.Find(&sign, id)
@@ -123,15 +118,14 @@ func DeleteSign(c buffalo.Context) (interface{}, interface{}) {
 	}
 	os.Remove(`D:\fe_booking_sign\public\img\` + sign.Picture)
 	_ = db.Destroy(&sign)
-	return resSuccess(nil), nil
+	return Success(nil), nil
 }
 
-func UpdateSign(c buffalo.Context) (interface{}, interface{}) {
+func UpdateSign(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	data := DynamicPostForm(c)
 	sign := models.Sign{}
 	if !sign.CheckParamPostForm(data) {
 		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
@@ -148,5 +142,5 @@ func UpdateSign(c buffalo.Context) (interface{}, interface{}) {
 	oldPicture := oldSign.(models.Sign).Picture
 	os.Remove(`D:\fe_booking_sign\public\img\` + oldPicture)
 	db.Update(&sign)
-	return resSuccess(nil), nil
+	return Success(nil), nil
 }

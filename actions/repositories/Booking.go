@@ -61,8 +61,24 @@ func ValidateBookingTime(newBooking models.Booking, db *pop.Connection, sign mod
 	}
 	return true, nil
 }
+func CheckDate(D1 time.Time, D2 time.Time) int {
+	diff := D2.Sub(D1)
+	allDay := int(diff.Hours()/24) + 1 //first-last
+	day := D1
+	sunday := 0
+	for day.Before(D2) {
+		if int(day.Weekday()) == 0 {
+			sunday = sunday + 1
+			day = day.AddDate(0, 0, 7)
+		} else {
+			day = day.AddDate(0, 0, 1)
+		}
+	}
+	weekday := sunday * 2 // weekday in firstdate - lastdate
+	return allDay - weekday
+}
 
-func RejectBooking(c buffalo.Context) (interface{}, interface{}) {
+func RejectBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
 	jwtReq, err := GetJWT(c)
 	if err != nil {
 		return nil, err
@@ -78,8 +94,6 @@ func RejectBooking(c buffalo.Context) (interface{}, interface{}) {
 	if tokens["Role"] != "admin" {
 		return nil, models.Error{500, "You not Admin"}
 	}
-
-	data := DynamicPostForm(c)
 	idbooking, _ := strconv.Atoi(data["id"].(string))
 	comment := data["comment"].(string)
 	booking := models.Booking{}
@@ -98,8 +112,8 @@ func RejectBooking(c buffalo.Context) (interface{}, interface{}) {
 	userInterface, err := GetUserByIduuid(c, booking.ApplicantID)
 	user, err := userInterface.(models.User)
 	db.Update(&booking)
-	mailers.SendWelcomeEmails("Your booking Rejected", user.Email)
-	return resSuccess("Success"), nil
+	mailers.SendWelcomeEmails("Your booking Rejected", user.Email, false)
+	return Success("Success"), nil
 }
 
 func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
@@ -138,60 +152,29 @@ func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}
 	if err != nil {
 		return nil, err
 	}
-	mailers.SendWelcomeEmails("Your booking approved", user.Email)
-	return resSuccess("Approve success"), nil
+	mailers.SendWelcomeEmails("Your booking approved", user.Email, true)
+	return Success("Approve success"), nil
 }
 
-func CheckDate(D1 time.Time, D2 time.Time) int {
-	diff := D2.Sub(D1)
-	allDay := int(diff.Hours()/24) + 1 //first-last
-	day := D1
-	sunday := 0
-	for day.Before(D2) {
-		if int(day.Weekday()) == 0 {
-			sunday = sunday + 1
-			day = day.AddDate(0, 0, 7)
-		} else {
-			day = day.AddDate(0, 0, 1)
-		}
-	}
-	weekday := sunday * 2 // weekday in firstdate - lastdate
-	return allDay - weekday
-}
+// func DeleteBooking(c buffalo.Context) (interface{}, interface{}) {
+// 	db, err := ConnectDB(c)
+// 	if err != nil {
+// 		return nil, models.Error{500, "Can't connect Database"}
+// 	}
+// 	data := DynamicPostForm(c)
+// 	booking := models.Booking{}
+// 	id, _ := strconv.Atoi(data["id"].(string))
+// 	err = db.Find(&booking, id)
+// 	if err != nil {
+// 		return nil, models.Error{500, "Data มีปัญหาไม่สามารถยกเลิกได้"}
+// 	}
+// 	_ = db.Destroy(&booking)
+// 	return Success(nil), nil
+// }
 
-func DeleteBooking(c buffalo.Context) (interface{}, interface{}) {
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, models.Error{500, "Can't connect Database"}
-	}
-	data := DynamicPostForm(c)
-	booking := models.Booking{}
-	id, _ := strconv.Atoi(data["id"].(string))
-	err = db.Find(&booking, id)
-	if err != nil {
-		return nil, models.Error{500, "Data มีปัญหาไม่สามารถยกเลิกได้"}
-	}
-	_ = db.Destroy(&booking)
-	return models.Error{200, "Delete success"}, nil
-}
-
-func GetBookingDaysBySign(c buffalo.Context) (interface{}, interface{}) {
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, models.Error{500, "Can't connect Database"}
-	}
-	bookings := models.Bookings{}
-	bookingdate := time.Now().Format("2006-01-02")
-	signid, _ := strconv.Atoi(c.Param("id"))
-	err = db.Q().Where("( last_date >= (?) or first_date >= (?) ) and sign_id = (?)", bookingdate, bookingdate, signid).All(&bookings)
-	if err != nil {
-		return nil, models.Error{400, "DB"}
-	}
-	days := models.BookingDays{}
-	for _, value := range bookings {
-		days = append(days, models.BookingDay{value.FirstDate, value.LastDate})
-	}
-	return days, nil
+func SendMail(c buffalo.Context) (interface{}, interface{}) {
+	mailers.SendWelcomeEmails("Test", "panupong.jkn@gmail.com", true)
+	return nil, nil
 }
 
 func GetPaginateAdmin(page string, c buffalo.Context) (interface{}, interface{}) {
