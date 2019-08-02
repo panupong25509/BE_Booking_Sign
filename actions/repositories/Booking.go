@@ -42,46 +42,6 @@ func AddBooking(c buffalo.Context, data map[string]interface{}) (interface{}, in
 	return newBooking, nil
 }
 
-func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
-	jwtReq, err := GetJWT(c)
-	if err != nil {
-		return nil, err
-	}
-	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, err
-	}
-	if tokens["Role"] != "admin" {
-		return nil, models.Error{500, "You not Admin"}
-	}
-	id, _ := strconv.Atoi(data["id"].(string))
-	booking := models.Booking{}
-	err = db.Find(&booking, id)
-	if err != nil {
-		return nil, err
-	}
-	if booking.Status == "approve" {
-		return nil, models.Error{500, "This booking approved"}
-	}
-	if booking.Status == "reject" {
-		return nil, models.Error{500, "This booking rejected"}
-	}
-	booking.Status = "approve"
-	userInterface, err := GetUserByIduuid(c, booking.ApplicantID)
-	user, err := userInterface.(models.User)
-	err = db.Update(&booking)
-	if err != nil {
-		return nil, err
-	}
-	mailers.SendWelcomeEmails("Your booking approved", user.Email)
-	return resSuccess("Approve success"), nil
-}
-
 func GenCodeBooking(data map[string]interface{}, sign models.Sign) string {
 	code := sign.Name + "CODE" + data["first_date"].(string) + data["last_date"].(string)
 	return code
@@ -203,8 +163,51 @@ func RejectBooking(c buffalo.Context) (interface{}, interface{}) {
 	}
 	booking.Comment = comment
 	booking.Status = "reject"
+	userInterface, err := GetUserByIduuid(c, booking.ApplicantID)
+	user, err := userInterface.(models.User)
 	db.Update(&booking)
+	mailers.SendWelcomeEmails("Your booking Rejected", user.Email)
 	return resSuccess("Success"), nil
+}
+
+func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+	jwtReq, err := GetJWT(c)
+	if err != nil {
+		return nil, err
+	}
+	tokens, err := DecodeJWT(jwtReq.(string), "bookingsign")
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	if tokens["Role"] != "admin" {
+		return nil, models.Error{500, "You not Admin"}
+	}
+	id, _ := strconv.Atoi(data["id"].(string))
+	booking := models.Booking{}
+	err = db.Find(&booking, id)
+	if err != nil {
+		return nil, err
+	}
+	if booking.Status == "approve" {
+		return nil, models.Error{500, "This booking approved"}
+	}
+	if booking.Status == "reject" {
+		return nil, models.Error{500, "This booking rejected"}
+	}
+	booking.Status = "approve"
+	userInterface, err := GetUserByIduuid(c, booking.ApplicantID)
+	user, err := userInterface.(models.User)
+	err = db.Update(&booking)
+	if err != nil {
+		return nil, err
+	}
+	mailers.SendWelcomeEmails("Your booking approved", user.Email)
+	return resSuccess("Approve success"), nil
 }
 
 func CheckDate(D1 time.Time, D2 time.Time) int {
