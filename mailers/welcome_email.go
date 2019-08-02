@@ -1,18 +1,22 @@
 package mailers
 
 import (
+	"log"
+
 	"github.com/gobuffalo/buffalo/mail"
 	"github.com/gobuffalo/buffalo/render"
 	"github.com/pkg/errors"
 )
 
-func SendWelcomeEmails() error {
+// func TextEmail
+func SendWelcomeEmails(Subject string, email string) error {
 	m := mail.NewMessage()
 
 	// fill in with your stuff:
-	m.Subject = "Welcome Email"
+	m.Subject = Subject
 	m.From = "panupong.jkn@gmail.com"
-	m.To = []string{"l2jew123@gmail.com"}
+	log.Print("email:", email)
+	m.To = []string{email}
 	err := m.AddBody(r.HTML("welcome_email.html"), render.Data{})
 	if err != nil {
 		return err
