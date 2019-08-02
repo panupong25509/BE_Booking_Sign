@@ -199,7 +199,7 @@ func RejectBooking(c buffalo.Context, data map[string]interface{}) (interface{},
 	userInterface, err := GetUserByIduuid(c, booking.ApplicantID)
 	user, err := userInterface.(models.User)
 	db.Update(&booking)
-	mailers.SendWelcomeEmails("Your booking Rejected", user.Email)
+	mailers.SendWelcomeEmails("Your booking Rejected", user.Email, false)
 	return Success("Success"), nil
 }
 
@@ -239,7 +239,7 @@ func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}
 	if err != nil {
 		return nil, err
 	}
-	mailers.SendWelcomeEmails("Your booking approved", user.Email)
+	mailers.SendWelcomeEmails("Your booking approved", user.Email, true)
 	return Success("Approve success"), nil
 }
 
@@ -258,3 +258,8 @@ func ApproveBooking(c buffalo.Context, data map[string]interface{}) (interface{}
 // 	_ = db.Destroy(&booking)
 // 	return Success(nil), nil
 // }
+
+func SendMail(c buffalo.Context) (interface{}, interface{}) {
+	mailers.SendWelcomeEmails("Test", "panupong.jkn@gmail.com", true)
+	return nil, nil
+}

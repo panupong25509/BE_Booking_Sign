@@ -80,6 +80,8 @@ func App() *buffalo.App {
 		app.GET("/admin/booking", handlers.GetBookingForAdmin)
 		app.POST("/admin/booking/approve", handlers.ApproveBooking)
 		app.POST("/admin/booking/reject", handlers.RejectBooking)
+		//test
+		app.GET("/sendmail", handlers.SendMail)
 
 	}
 

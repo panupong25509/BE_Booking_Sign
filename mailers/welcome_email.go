@@ -9,7 +9,7 @@ import (
 )
 
 // func TextEmail
-func SendWelcomeEmails(Subject string, email string) error {
+func SendWelcomeEmails(Subject string, email string, status bool) error {
 	m := mail.NewMessage()
 
 	// fill in with your stuff:
@@ -17,7 +17,11 @@ func SendWelcomeEmails(Subject string, email string) error {
 	m.From = "panupong.jkn@gmail.com"
 	log.Print("email:", email)
 	m.To = []string{email}
-	err := m.AddBody(r.HTML("welcome_email.html"), render.Data{})
+	file := "rejected.html"
+	if status {
+		file = "approved.html"
+	}
+	err := m.AddBody(r.HTML(file), render.Data{})
 	if err != nil {
 		return err
 	}
