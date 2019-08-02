@@ -16,17 +16,47 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func Register(c buffalo.Context) (interface{}, interface{}) {
+func Login(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
 	db, err := ConnectDB(c)
 	if err != nil {
 		return nil, err
 	}
-	data := DynamicPostForm(c)
+	username := data["username"].(string)
+	password := data["password"].(string)
+	if username == "" {
+		return nil, models.Error{400, "ไม่มี username"}
+	}
+	if password == "" {
+		return nil, models.Error{400, "ไม่มี password"}
+	}
+	hashBytes, err := base64.StdEncoding.DecodeString(password)
+	if err != nil {
+		return nil, err
+	}
+	user := models.Users{}
+	_ = db.Q().Where("username = (?)", username).All(&user)
+	if CheckPasswordHash(BytesToString(hashBytes), user[0].Password) {
+		var secret = "bookingsign"
+		jwt := EncodeJWT(user[0], secret)
+		return jwt, nil
+	}
+	return nil, models.Error{400, "username or password incorrect"}
+}
+func BytesToString(b []byte) string {
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	sh := reflect.StringHeader{bh.Data, bh.Len}
+	return *(*string)(unsafe.Pointer(&sh))
+}
+func Register(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
 	user := models.User{}
 	if !user.CheckParams(data) {
 		return nil, models.Error{400, "กรอกข้อมูลไม่ครบ"}
 	}
-	_, err = GetUserByUsername(c)
+	_, err = GetUserByUsername(c, data)
 	if err == nil {
 		return nil, models.Error{500, "Username นี้มีผู้ใช้แล้ว"}
 	}
@@ -39,12 +69,28 @@ func Register(c buffalo.Context) (interface{}, interface{}) {
 	if err != nil {
 		return nil, err
 	}
-	return resSuccess(nil), nil
+	return Success(nil), nil
 }
 
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+func GetUserByUsername(c buffalo.Context, data map[string]interface{}) (interface{}, interface{}) {
+	db, err := ConnectDB(c)
+	if err != nil {
+		return nil, err
+	}
+	if data["username"] == nil {
+		return nil, models.Error{400, "ไม่มี username"}
+	}
+	username := data["username"].(string)
+	user := models.Users{}
+	_ = db.Q().Where("username = (?)", username).All(&user)
+	if len(user) == 0 {
+		return nil, models.Error{400, "ไม่มี username"}
+	}
+	return user[0], nil
 }
 
 func GetUserById(c buffalo.Context) (interface{}, interface{}) {
@@ -72,60 +118,8 @@ func GetUserByIduuid(c buffalo.Context, id uuid.UUID) (interface{}, interface{})
 	}
 	user := models.User{}
 	err = db.Find(&user, id)
-	// log.Print(user)
 	if err != nil {
 		return nil, models.Error{400, "ไม่มีผู้ใช้นี้ใน"}
 	}
 	return user, nil
-}
-
-func GetUserByUsername(c buffalo.Context) (interface{}, interface{}) {
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, err
-	}
-	data := DynamicPostForm(c)
-	if data["username"] == nil {
-		return nil, models.Error{400, "ไม่มี username"}
-	}
-	username := data["username"].(string)
-	user := models.Users{}
-	_ = db.Q().Where("username = (?)", username).All(&user)
-	if len(user) == 0 {
-		return nil, models.Error{400, "ไม่มี username"}
-	}
-	return user[0], nil
-}
-
-func Login(c buffalo.Context) (interface{}, interface{}) {
-	db, err := ConnectDB(c)
-	if err != nil {
-		return nil, err
-	}
-	data := DynamicPostForm(c)
-	username := data["username"].(string)
-	password := data["password"].(string)
-	if username == "" {
-		return nil, models.Error{400, "ไม่มี username"}
-	}
-	if password == "" {
-		return nil, models.Error{400, "ไม่มี password"}
-	}
-	hashBytes, err := base64.StdEncoding.DecodeString(password)
-	if err != nil {
-		return nil, err
-	}
-	user := models.Users{}
-	_ = db.Q().Where("username = (?)", username).All(&user)
-	if CheckPasswordHash(BytesToString(hashBytes), user[0].Password) {
-		var secret = "bookingsign"
-		jwt := EncodeJWT(user[0], secret)
-		return jwt, nil
-	}
-	return nil, models.Error{400, "username or password incorrect"}
-}
-func BytesToString(b []byte) string {
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	sh := reflect.StringHeader{bh.Data, bh.Len}
-	return *(*string)(unsafe.Pointer(&sh))
 }

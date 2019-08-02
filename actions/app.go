@@ -60,20 +60,23 @@ func App() *buffalo.App {
 		// Remove to disable this.
 		app.Use(popmw.Transaction(models.DB))
 
-		app.GET("/", handlers.Hello)
+		//Authentication
+		app.POST("/login", handlers.Login)
 		app.POST("/register", handlers.Register)
-		app.GET("/user", handlers.GetUserById)
+		//sign
 		app.GET("/allsign", handlers.GetAllSign)
 		app.POST("/addsign", handlers.AddSign)
-		app.POST("/addbooking", handlers.AddBooking)
-		app.GET("/booking", handlers.GetBookingByUser)
 		app.POST("/deletesign", handlers.DeleteSign)
 		app.POST("/updatesign", handlers.UpdateSign)
-		app.POST("/getsign", handlers.GetSignById)
-		app.POST("/deletebooking", handlers.DeleteBooking)
+		app.GET("/sign/{id}", handlers.GetSignById)
+		//booking
+		app.GET("/booking", handlers.GetBookingByUser)
+		app.POST("/addbooking", handlers.AddBooking)
+		// app.POST("/deletebooking", handlers.DeleteBooking)
 		app.GET("/getbookingdays/{id}", handlers.GetBookingDayBySign)
-		app.POST("/login", handlers.Login)
-
+		// //user
+		app.GET("/user", handlers.GetUserById)
+		//admin
 		app.GET("/admin/booking", handlers.GetBookingForAdmin)
 		app.POST("/admin/booking/approve", handlers.ApproveBooking)
 		app.POST("/admin/booking/reject", handlers.RejectBooking)
