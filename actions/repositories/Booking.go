@@ -236,7 +236,7 @@ func GetPaginateAdmin(page string, c buffalo.Context) (interface{}, interface{})
 	return &bookingJson, nil
 }
 
-func GetPaginateUser(page string, c buffalo.Context) (interface{}, interface{}) {
+func GetPaginateUser(page string, order string, c buffalo.Context) (interface{}, interface{}) {
 	jwtReq, err := GetJWT(c)
 	if err != nil {
 		return nil, err
@@ -252,7 +252,7 @@ func GetPaginateUser(page string, c buffalo.Context) (interface{}, interface{}) 
 	numberPage, _ := strconv.Atoi(page)
 	q := db.Paginate(numberPage, 10)
 	booking := []models.Booking{}
-	err = q.Where("applicant_id = (?)", tokens["UserID"]).Order("first_date asc").All(&booking)
+	err = q.Where("applicant_id = (?)", tokens["UserID"]).Order(order).All(&booking)
 	bookings := []models.Booking{}
 	for _, value := range booking {
 		user, err := GetUserByIduuid(c, value.ApplicantID)

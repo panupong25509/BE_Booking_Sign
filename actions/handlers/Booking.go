@@ -68,7 +68,8 @@ func GetPaginateAdmin(c buffalo.Context) error {
 
 func GetPaginateUser(c buffalo.Context) error {
 	page := c.Param("page")
-	allBooking, err := repositories.GetPaginateUser(page, c)
+	order := c.Param("order")
+	allBooking, err := repositories.GetPaginateUser(page, order, c)
 	if err != nil {
 		status := err.(models.Error)
 		return c.Render(status.Code, r.JSON(status))
